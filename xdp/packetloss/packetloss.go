@@ -15,20 +15,9 @@ import (
 type PacketLoss struct {
 	NetworkInterface *net.Interface
 	PacketLossRate   int32
-	ctx              context.Context
-	stop             context.CancelFunc
 }
 
-func (p *PacketLoss) Start(logger *zap.Logger) {
-	p.ctx, p.stop = context.WithCancel(context.Background())
-	go p.start(logger)
-}
-
-func (p *PacketLoss) Stop() {
-	p.stop()
-}
-
-func (p *PacketLoss) start(logger *zap.Logger) {
+func (p *PacketLoss) Start(ctx context.Context, logger *zap.Logger) {
 	// Load pre-compiled programs into the kernel.
 	objs := bpfObjects{}
 	if err := loadBpfObjects(&objs, nil); err != nil {
@@ -61,5 +50,5 @@ func (p *PacketLoss) start(logger *zap.Logger) {
 		),
 	)
 
-	<-p.ctx.Done()
+	<-ctx.Done()
 }

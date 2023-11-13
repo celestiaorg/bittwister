@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -56,6 +57,9 @@ var startCmd = &cobra.Command{
 			return fmt.Errorf("lookup network device %q: %v", flagsStart.networkInterfaceName, err)
 		}
 
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
 		/*---------*/
 
 		lossRate, err := strconv.ParseInt(flagsStart.packetLossRate, 10, 32)
@@ -64,13 +68,13 @@ var startCmd = &cobra.Command{
 		}
 
 		if lossRate > 0 {
+
 			pl := packetloss.PacketLoss{
 				PacketLossRate:   int32(lossRate),
 				NetworkInterface: iface,
 			}
 
-			defer pl.Stop()
-			pl.Start(logger)
+			go pl.Start(ctx, logger)
 		}
 
 		/*---------*/
@@ -81,6 +85,7 @@ var startCmd = &cobra.Command{
 
 		<-signalChan
 		logger.Info("Received interrupt signal. Shutting down...")
+		cancel()
 
 		return nil
 	},
