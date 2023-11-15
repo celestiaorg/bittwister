@@ -12,4 +12,7 @@ build:
 run: all
 	sudo ./bin/$(BINARY_NAME) start -d wlp3s0 -p 50
 
-.PHONY: all generate build run
+test:
+	@bash ./scripts/tests/packetloss.sh
+
+.PHONY: all generate build run test
