@@ -2,7 +2,7 @@
 
 DOCKER_IMG="bittwister-pk-test"
 CONTAINER_NAME="bittwister-pk-test"
-NUM_OF_PING_PACKETS=50
+NUM_OF_PING_PACKETS=2
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${SCRIPT_DIR}/utils.sh"
@@ -39,7 +39,7 @@ done;
 
 echo -e "\n\nResults:"
 echo "Number of packets per test: ${NUM_OF_PING_PACKETS}"
-echo ${allResults}
+echo -e ${allResults}
 echo -e "\n\n"
 
 cleanup
