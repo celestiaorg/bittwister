@@ -17,7 +17,7 @@ function ping_test {
     ping_result=$(ping -c ${NUM_OF_PING_PACKETS} $1)
     packet_loss=$(echo "$ping_result" | awk '/packet loss/ {print $6}')
 
-    echo -e "\nPacket loss: $packet_loss \t\t Expected: $2%\n"
+    echo -e "\nPacket loss: $packet_loss \t Expected: $2%\n"
 }
 
 # ----- main ------ #
@@ -27,8 +27,8 @@ build_image
 
 allResults=""
 for EXPECTED_PACKET_LOSS in 0 10 20 50 70 80 100; do
-    run_container "-p ${EXPECTED_PACKET_LOSS}"
     echo -e "\nTesting with packet loss: ${EXPECTED_PACKET_LOSS}%"
+    run_container "-p ${EXPECTED_PACKET_LOSS}"
     
     IP_ADDRESS=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME})
     echo "Pinging IP address: ${IP_ADDRESS}"
@@ -39,7 +39,7 @@ done;
 
 echo -e "\n\nResults:"
 echo "Number of packets per test: ${NUM_OF_PING_PACKETS}"
-echo -e ${allResults}
+echo -e "${allResults}"
 echo -e "\n\n"
 
 cleanup

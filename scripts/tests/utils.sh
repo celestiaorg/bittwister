@@ -7,8 +7,8 @@ function build_image {
 
 function run_container {
     if docker ps -a --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
-    echo "Container ${CONTAINER_NAME} exists. Removing..."
-    docker rm -f ${CONTAINER_NAME};
+        echo "Container ${CONTAINER_NAME} exists. Removing..."
+        docker rm -f ${CONTAINER_NAME};
     fi
 
     echo "Running container..."
