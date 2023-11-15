@@ -2,7 +2,7 @@
 
 DOCKER_IMG="bittwister-pk-test"
 CONTAINER_NAME="bittwister-pk-test"
-NUM_OF_PING_PACKETS=2
+NUM_OF_PING_PACKETS=50
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${SCRIPT_DIR}/utils.sh"
