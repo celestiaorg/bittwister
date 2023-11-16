@@ -6,7 +6,7 @@ ARG arch=x86_64
 WORKDIR /go/src/app/
 COPY . /go/src/app/
 
-RUN apk add --no-cache \
+RUN apk update && apk add --no-cache \
     llvm \
     clang \
     llvm-static \
