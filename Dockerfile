@@ -31,6 +31,6 @@ FROM docker.io/alpine:3.18.4 AS production
 
 WORKDIR /app/
 COPY --from=development /build .
-RUN apk add curl
+RUN apk update && apk add curl
 
 ENTRYPOINT ["./bittwister", "start", "-d", "eth0", "-p", "50"]
