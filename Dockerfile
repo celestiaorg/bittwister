@@ -27,7 +27,7 @@ ENTRYPOINT ["tail", "-f", "/dev/null"]
 
 #----------------------------#
 
-FROM alpine:latest AS production
+FROM docker.io/alpine:3.18.4 AS production
 
 WORKDIR /app/
 COPY --from=development /build .
