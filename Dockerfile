@@ -27,6 +27,15 @@ ENTRYPOINT ["tail", "-f", "/dev/null"]
 
 #----------------------------#
 
+FROM docker.io/alpine:3.18.4 AS test
+
+WORKDIR /app/
+COPY --from=development /build .
+
+ENTRYPOINT ["./bittwister"]
+
+#----------------------------#
+
 FROM docker.io/alpine:3.18.4 AS production
 
 WORKDIR /app/

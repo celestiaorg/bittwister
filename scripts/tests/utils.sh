@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function build_image {
-    echo "Building image..."
-    docker build -t ${DOCKER_IMG} .
+    echo "Building test image..."
+    docker build --target test -t ${DOCKER_IMG} .
 }
 
 function run_container {
@@ -12,7 +12,8 @@ function run_container {
     fi
 
     echo "Running container..."
-    docker run --privileged --name ${CONTAINER_NAME} ${DOCKER_IMG} -d eth0 ${1} &
+    cmd=${1}
+    docker run --privileged --name ${CONTAINER_NAME} ${DOCKER_IMG} ${cmd} &
 
     # Check if the container is running
     while [[ "$(docker inspect -f '{{.State.Running}}' ${CONTAINER_NAME} 2>/dev/null)" != "true" ]]; do

@@ -3,6 +3,7 @@
 DOCKER_IMG="bittwister-pk-test"
 CONTAINER_NAME="bittwister-pk-test"
 NUM_OF_PING_PACKETS=50
+NETWORK_INTERFACE="eth0"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${SCRIPT_DIR}/utils.sh"
@@ -28,7 +29,7 @@ build_image
 allResults=""
 for EXPECTED_PACKET_LOSS in 0 10 20 50 70 80 100; do
     echo -e "\nTesting with packet loss: ${EXPECTED_PACKET_LOSS}%"
-    run_container "-p ${EXPECTED_PACKET_LOSS}"
+    run_container "start -d ${NETWORK_INTERFACE} -p ${EXPECTED_PACKET_LOSS}"
     
     IP_ADDRESS=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME})
     echo "Pinging IP address: ${IP_ADDRESS}"
