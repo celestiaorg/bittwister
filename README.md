@@ -27,3 +27,11 @@ Flags:
 ```bash
 sudo ./bin/bittwister start -d eth0 -p 25
 ```
+
+## Test
+
+The tests require docker to be installed. To run the tests, execute the following command:
+  
+```bash
+make test
+```
