@@ -1,5 +1,5 @@
 # FROM golang:alpine3.15 AS development
-FROM golang:alpine AS development
+FROM docker.io/golang:1.21-alpine3.18 AS development
 ARG arch=x86_64
 
 # ENV CGO_ENABLED=0
