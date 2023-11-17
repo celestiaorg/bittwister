@@ -24,12 +24,12 @@ function ping_test {
 # ----- main ------ #
 echo "Running packetloss tests..."
 
-build_image
+build_image ${DOCKER_IMG}
 
 allResults=""
 for EXPECTED_PACKET_LOSS in 0 10 20 50 70 80 100; do
     echo -e "\nTesting with packet loss: ${EXPECTED_PACKET_LOSS}%"
-    run_container "start -d ${NETWORK_INTERFACE} -p ${EXPECTED_PACKET_LOSS}"
+    new_container ${DOCKER_IMG} ${CONTAINER_NAME} "start -d ${NETWORK_INTERFACE} -p ${EXPECTED_PACKET_LOSS}"
     
     IP_ADDRESS=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME})
     echo "Pinging IP address: ${IP_ADDRESS}"
@@ -44,3 +44,6 @@ echo -e "${allResults}"
 echo -e "\n\n"
 
 cleanup
+
+# We wait for the user to see the results before the next test starts
+wait 5

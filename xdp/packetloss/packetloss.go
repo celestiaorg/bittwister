@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/celestiaorg/bittwister/xdp"
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
 	"go.uber.org/zap"
@@ -15,7 +16,10 @@ import (
 type PacketLoss struct {
 	NetworkInterface *net.Interface
 	PacketLossRate   int32
+	ready            bool
 }
+
+var _ xdp.XdpLoader = (*PacketLoss)(nil)
 
 func (p *PacketLoss) Start(ctx context.Context, logger *zap.Logger) {
 	// Load pre-compiled programs into the kernel.
@@ -50,5 +54,13 @@ func (p *PacketLoss) Start(ctx context.Context, logger *zap.Logger) {
 		),
 	)
 
+	p.ready = true
+
 	<-ctx.Done()
+
+	fmt.Printf("Packet loss stopped.")
+}
+
+func (p *PacketLoss) Ready() bool {
+	return p.ready
 }

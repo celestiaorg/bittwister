@@ -10,9 +10,14 @@ build:
 
 # `run` is used to ease the developer life
 run: all
-	sudo ./bin/$(BINARY_NAME) start -d wlp3s0 -p 50
+	sudo ./bin/$(BINARY_NAME) start -d wlp3s0 -b 500
 
-test:
+test-packetloss:
 	@bash ./scripts/tests/packetloss.sh
+
+test-bandwidth:
+	@bash ./scripts/tests/bandwidth.sh
+
+test: test-packetloss test-bandwidth
 
 .PHONY: all generate build run test
