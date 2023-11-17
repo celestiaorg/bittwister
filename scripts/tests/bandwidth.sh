@@ -24,6 +24,9 @@ echo "Running Bandwidth tests..."
 
 build_image ${DOCKER_IMG}
 
+# run another contianer to run iperf3 client without any limitations
+new_container ${DOCKER_IMG} ${CLIENT_CONTAINER_NAME} "start -d ${NETWORK_INTERFACE}"
+
 allResults=""
 for EXPECTED_BANDWIDTH in 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576 2097152 4194304 8388608 16777216 33554432 67108864 134217728 268435456 536870912 1073741824; do
     echo -e "\nTesting with bandwidth: ${EXPECTED_BANDWIDTH} bps"
@@ -35,9 +38,6 @@ for EXPECTED_BANDWIDTH in 2048 4096 8192 16384 32768 65536 131072 262144 524288 
     IP_ADDRESS=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME})
     echo "Pinging IP address: ${IP_ADDRESS}"
 
-    
-    # run another contianer to run iperf3 client without any limitations
-    new_container ${DOCKER_IMG} ${CLIENT_CONTAINER_NAME} "start -d ${NETWORK_INTERFACE}"
     test_result=$(exec_on_container ${CLIENT_CONTAINER_NAME} "iperf3 -c ${IP_ADDRESS} -t ${DURATION_PER_TEST} -P ${PARALLEL_CONNECTIONS}")
 
     # sender=$(echo -e "$test_result" | awk '/SUM.*sender/ {print $6, $7}')
