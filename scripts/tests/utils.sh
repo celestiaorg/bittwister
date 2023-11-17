@@ -1,5 +1,18 @@
 #!/bin/bash
 
+REQUIRED_TOOLS=("jq" "docker" "awk")
+function check_required_tools {
+    printf "Checking required tools..." 
+    for t in "${REQUIRED_TOOLS[@]}"
+    do
+        if ! which "$t" &> /dev/null; then
+            echo -e "\n$t is not installed. Please install it."
+            exit 1
+        fi
+    done
+    echo "Ok"
+}
+
 function build_image {
     # Function to build the docker image
     # Input: Image name
@@ -44,7 +57,8 @@ function convert_bandwidth {
     # Function to convert bandwidth in bits per second to human-readable format
     # Input: Bandwidth in bits per second
 
-    local bps=$1
+    # get rid of the decimal part
+    local bps=$(echo "$1" | awk '{printf "%d\n", $1}')
     local unit=('bps' 'Kbps' 'Mbps' 'Gbps')
     local idx=0
 

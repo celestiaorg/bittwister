@@ -23,7 +23,7 @@ function ping_test {
 
 # ----- main ------ #
 echo "Running packetloss tests..."
-
+check_required_tools
 build_image ${DOCKER_IMG}
 
 allResults=""
