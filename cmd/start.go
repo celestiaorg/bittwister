@@ -6,9 +6,9 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 
+	"github.com/celestiaorg/bittwister/xdp/bandwidth"
 	"github.com/celestiaorg/bittwister/xdp/packetloss"
 	"github.com/spf13/cobra"
 )
@@ -18,11 +18,13 @@ const (
 	flagNetworkInterfaceName = "network-device-name"
 	flagLogLevel             = "log-level"
 	flagProductionMode       = "production-mode"
+	flagBandwidth            = "bandwidth"
 )
 
 var flagsStart struct {
-	packetLossRate       string
 	networkInterfaceName string
+	packetLossRate       int32
+	bandwidth            int64
 	logLevel             string
 	productionMode       bool
 }
@@ -30,10 +32,12 @@ var flagsStart struct {
 func init() {
 	rootCmd.AddCommand(startCmd)
 
-	startCmd.PersistentFlags().StringVarP(&flagsStart.packetLossRate, flagPacketLossRate, "p", "0", "packet loss rate (e.g. 10 for 10% packet loss)")
+	startCmd.PersistentFlags().Int32VarP(&flagsStart.packetLossRate, flagPacketLossRate, "p", 0, "packet loss rate (e.g. 10 for 10% packet loss)")
 	startCmd.PersistentFlags().StringVarP(&flagsStart.networkInterfaceName, flagNetworkInterfaceName, "d", "", "network interface name")
-	startCmd.PersistentFlags().StringVarP(&flagsStart.logLevel, flagLogLevel, "l", "info", "log level (e.g. debug, info, warn, error, dpanic, panic, fatal)")
-	startCmd.PersistentFlags().BoolVarP(&flagsStart.productionMode, flagProductionMode, "m", false, "production mode (e.g. disable debug logs)")
+	startCmd.PersistentFlags().Int64VarP(&flagsStart.bandwidth, flagBandwidth, "b", 0, "bandwidth limit in bps (e.g. 1000 for 1Kbps)")
+
+	startCmd.PersistentFlags().StringVar(&flagsStart.logLevel, flagLogLevel, "info", "log level (e.g. debug, info, warn, error, dpanic, panic, fatal)")
+	startCmd.PersistentFlags().BoolVar(&flagsStart.productionMode, flagProductionMode, false, "production mode (e.g. disable debug logs)")
 }
 
 var startCmd = &cobra.Command{
@@ -62,19 +66,22 @@ var startCmd = &cobra.Command{
 
 		/*---------*/
 
-		lossRate, err := strconv.ParseInt(flagsStart.packetLossRate, 10, 32)
-		if err != nil {
-			return fmt.Errorf("parse packet loss rate %q: %v", flagsStart.packetLossRate, err)
-		}
-
-		if lossRate > 0 {
-
+		if flagsStart.packetLossRate > 0 {
 			pl := packetloss.PacketLoss{
-				PacketLossRate:   int32(lossRate),
+				PacketLossRate:   flagsStart.packetLossRate,
 				NetworkInterface: iface,
 			}
-
 			go pl.Start(ctx, logger)
+		}
+
+		/*---------*/
+
+		if flagsStart.bandwidth > 0 {
+			b := bandwidth.Bandwidth{
+				Limit:            flagsStart.bandwidth,
+				NetworkInterface: iface,
+			}
+			go b.Start(ctx, logger)
 		}
 
 		/*---------*/
