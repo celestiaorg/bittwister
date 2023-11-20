@@ -28,6 +28,12 @@ build_image ${DOCKER_IMG}
 new_container ${DOCKER_IMG} ${CLIENT_CONTAINER_NAME} "start -d ${NETWORK_INTERFACE}"
 
 allResults=""
+# These are the expected bandwidths in bits per second
+# Each iteration perfroms a test with a different bandwidth
+# to do so, it creates a new container with the expected bandwidth
+# and runs iperf3 server in daemon mode
+# then it runs iperf3 client on the client container
+# and finally it compares the expected bandwidth with the actual bandwidth
 for EXPECTED_BANDWIDTH in 65536 131072 262144 524288 1048576 2097152 4194304 8388608 16777216 33554432 67108864 134217728 268435456 536870912 1073741824; do
     echo -e "\nTesting with bandwidth: ${EXPECTED_BANDWIDTH} bps"
     new_container ${DOCKER_IMG} ${CONTAINER_NAME} "start -d ${NETWORK_INTERFACE} -b ${EXPECTED_BANDWIDTH}"

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This file contains a set of functions that are used by the test scripts
+# to build the docker image, create a container, execute commands on the container, etc.
+
 REQUIRED_TOOLS=("jq" "docker" "awk")
 function check_required_tools {
     printf "Checking required tools..." 
