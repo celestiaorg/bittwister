@@ -18,6 +18,9 @@ test-packetloss:
 test-bandwidth:
 	@bash ./scripts/tests/bandwidth.sh
 
+test-latency:
+	@bash ./scripts/tests/latency.sh
+
 test: test-packetloss test-bandwidth
 
 .PHONY: all generate build run test
