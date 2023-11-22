@@ -15,13 +15,14 @@ import (
 type Latency struct {
 	NetworkInterface *net.Interface
 	Latency          time.Duration
+	Jitter           time.Duration
 	TcBinPath        string // default: tc
 	ready            bool
 }
 
 var _ xdp.XdpLoader = (*Latency)(nil)
 
-// Latency uses TC under the hood to impose latency on packets.
+// Latency uses TC under the hood to impose latency and jitter on packets.
 // This is a temporary solution until we have a better way to do this; probably in XDP.
 func (l *Latency) Start(ctx context.Context, logger *zap.Logger) {
 	if l.TcBinPath == "" {
@@ -37,12 +38,13 @@ func (l *Latency) Start(ctx context.Context, logger *zap.Logger) {
 	}
 
 	if err := l.addTc(); err != nil {
-		logger.Fatal("failed to set latency using tc", zap.Error(err))
+		logger.Fatal("failed to set latency/jitter using tc", zap.Error(err))
 	}
 
 	logger.Info(
-		fmt.Sprintf("Latency started with %d milliseconds on device %q",
+		fmt.Sprintf("Latency/Jitter started with %d milliseconds latency and %d jitter on device %q",
 			l.Latency.Milliseconds(),
+			l.Jitter.Milliseconds(),
 			l.NetworkInterface.Name,
 		),
 	)
@@ -75,7 +77,8 @@ func (l *Latency) deleteTc() error {
 
 func (l *Latency) addTc() error {
 	latencyStr := fmt.Sprintf("%dms", l.Latency.Milliseconds())
-	return exec.Command(l.TcBinPath, "qdisc", "add", "dev", l.NetworkInterface.Name, "root", "netem", "delay", latencyStr).Run()
+	jitterStr := fmt.Sprintf("%dms", l.Jitter.Milliseconds())
+	return exec.Command(l.TcBinPath, "qdisc", "add", "dev", l.NetworkInterface.Name, "root", "netem", "delay", latencyStr, jitterStr).Run()
 }
 
 func (l *Latency) isThereTcNetEmRule() bool {

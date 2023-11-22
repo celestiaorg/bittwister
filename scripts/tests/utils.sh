@@ -56,6 +56,16 @@ function exec_on_container {
     docker exec -it ${container_name} ${cmd}
 }
 
+function exec_on_container_noit {
+    # Function to execute a command on a running container 
+    # and it is not interactive
+    # Inputs: contianer name, command to execute
+
+    container_name=${1}
+    cmd=${2}
+    docker exec ${container_name} ${cmd}
+}
+
 function convert_bandwidth {
     # Function to convert bandwidth in bits per second to human-readable format
     # Input: Bandwidth in bits per second
