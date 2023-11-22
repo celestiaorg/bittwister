@@ -22,6 +22,7 @@ const (
 	flagProductionMode       = "production-mode"
 	flagBandwidth            = "bandwidth"
 	flagLatency              = "latency"
+	flagJitter               = "jitter"
 	flagTcBinPath            = "tc-path"
 )
 
@@ -30,6 +31,7 @@ var flagsStart struct {
 	packetLossRate       int32
 	bandwidth            int64
 	latency              int64
+	jitter               int64
 	tcBinPath            string
 
 	logLevel       string
@@ -43,6 +45,7 @@ func init() {
 	startCmd.PersistentFlags().StringVarP(&flagsStart.networkInterfaceName, flagNetworkInterfaceName, "d", "", "network interface name")
 	startCmd.PersistentFlags().Int64VarP(&flagsStart.bandwidth, flagBandwidth, "b", 0, "bandwidth limit in bps (e.g. 1000 for 1Kbps)")
 	startCmd.PersistentFlags().Int64VarP(&flagsStart.latency, flagLatency, "l", 0, "latency in milliseconds (e.g. 100 for 100ms)")
+	startCmd.PersistentFlags().Int64VarP(&flagsStart.jitter, flagJitter, "j", 0, "jitter in milliseconds (e.g. 10 for 10ms)")
 	startCmd.PersistentFlags().StringVar(&flagsStart.tcBinPath, flagTcBinPath, "tc", "path to tc binary")
 
 	startCmd.PersistentFlags().StringVar(&flagsStart.logLevel, flagLogLevel, "info", "log level (e.g. debug, info, warn, error, dpanic, panic, fatal)")
@@ -95,9 +98,10 @@ var startCmd = &cobra.Command{
 
 		/*---------*/
 
-		if flagsStart.latency > 0 {
+		if flagsStart.latency > 0 || flagsStart.jitter > 0 {
 			l := latency.Latency{
 				Latency:          time.Duration(flagsStart.latency) * time.Millisecond,
+				Jitter:           time.Duration(flagsStart.jitter) * time.Millisecond,
 				NetworkInterface: iface,
 				TcBinPath:        flagsStart.tcBinPath,
 			}

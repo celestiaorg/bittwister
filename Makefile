@@ -21,6 +21,9 @@ test-bandwidth:
 test-latency:
 	@bash ./scripts/tests/latency.sh
 
-test: test-packetloss test-bandwidth
+test-jitter:
+	@bash ./scripts/tests/jitter.sh
+
+test: test-packetloss test-bandwidth test-latency test-jitter
 
 .PHONY: all generate build run test

@@ -16,6 +16,7 @@ sudo ./bin/bittwister start [flags]
 Flags:
   -b, --bandwidth int                bandwidth limit in bps (e.g. 1000 for 1Kbps)
   -h, --help                         help for start
+  -j, --jitter int                   jitter in milliseconds (e.g. 10 for 10ms)
   -l, --latency int                  latency in milliseconds (e.g. 100 for 100ms)
       --log-level string             log level (e.g. debug, info, warn, error, dpanic, panic, fatal) (default "info")
   -d, --network-device-name string   network interface name
@@ -39,6 +40,11 @@ sudo ./bin/bittwister start -d eth0 -b 1048576
 ```bash
 # Apply 100 ms latency to eth0
 sudo ./bin/bittwister start -d eth0 -l 100
+```
+
+```bash
+# Apply 10 ms jitter to eth0
+sudo ./bin/bittwister start -d eth0 -j 10
 ```
 
 ## Test
@@ -122,4 +128,28 @@ Average latency: 1700.255 ms     Expected: 1500 ms
 Average latency: 2300.317 ms     Expected: 2000 ms
 Average latency: 3600.249 ms     Expected: 3000 ms
 Average latency: 5166.803 ms     Expected: 5000 ms
+```
+
+### Test Jitter
+
+The jitter function can be tested by running the following command:
+
+```bash
+make test-jitter
+```
+
+```yaml
+Number of packets per test: 50
+
+Average jitter: 4.199 ms       Max expected jitter: 10 ms
+Average jitter: 16.465 ms      Max expected jitter: 50 ms
+Average jitter: 34.757 ms      Max expected jitter: 100 ms
+Average jitter: 66.711 ms      Max expected jitter: 200 ms
+Average jitter: 167.649 ms     Max expected jitter: 500 ms
+Average jitter: 216.576 ms     Max expected jitter: 700 ms
+Average jitter: 289.205 ms     Max expected jitter: 1000 ms
+Average jitter: 466.368 ms     Max expected jitter: 1500 ms
+Average jitter: 660.321 ms     Max expected jitter: 2000 ms
+Average jitter: 669.862 ms     Max expected jitter: 3000 ms
+Average jitter: 780.299 ms     Max expected jitter: 5000 ms
 ```
