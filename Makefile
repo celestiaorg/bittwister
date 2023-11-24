@@ -8,6 +8,9 @@ generate:
 build:
 	go build -o bin/$(BINARY_NAME) -v .
 
+docker:
+	docker build -t bittwister .
+
 # `run` is used to ease the developer life
 run: all
 	sudo ./bin/$(BINARY_NAME) start -d wlp3s0 -b 500
