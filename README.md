@@ -31,7 +31,7 @@ Flags:
 # Apply 25 percent packet loss to eth0
 sudo ./bin/bittwister start -d eth0 -p 25
 ```
-  
+
 ```bash
 # Apply 1 Mbps bandwidth limit to eth0
 sudo ./bin/bittwister start -d eth0 -b 1048576
@@ -47,10 +47,30 @@ sudo ./bin/bittwister start -d eth0 -l 100
 sudo ./bin/bittwister start -d eth0 -j 10
 ```
 
+### Using Bittwister in Kubernetes
+
+To utilize Bittwister within a Kubernetes environment, specific configurations must be added to the container.
+
+For simulating latency and jitter, the container needs to be granted additional capabilities. This can be achieved by adding the `NET_ADMIN` capability to the container's security context:
+
+```yaml
+securityContext:
+  capabilities:
+    add:
+      - NET_ADMIN
+```
+
+For simulating packet loss and limiting bandwidth, the container needs to operate in privileged mode. This can be set in the container's security context as follows:
+
+```yaml
+securityContext:
+  privileged: true
+```
+
 ## Test
 
 The tests require docker to be installed. To run all the tests, execute the following command:
-  
+
 ```bash
 make test
 ```
