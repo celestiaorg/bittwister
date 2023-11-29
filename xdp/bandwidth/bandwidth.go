@@ -56,6 +56,9 @@ func (b *Bandwidth) Start(ctx context.Context, logger *zap.Logger) {
 
 	b.ready = true
 	<-ctx.Done()
+
+	b.ready = false
+	logger.Info(fmt.Sprintf("Bandwidth limiter stopped on device %q", b.NetworkInterface.Name))
 }
 
 func (b *Bandwidth) Ready() bool {

@@ -11,9 +11,8 @@ build:
 docker:
 	docker build -t bittwister .
 
-# `run` is used to ease the developer life
-run: all
-	sudo ./bin/$(BINARY_NAME) start -d wlp3s0 -b 500
+test-go:
+	sudo go test -v ./... -count=1 -p=1
 
 test-packetloss:
 	@bash ./scripts/tests/packetloss.sh
@@ -27,6 +26,6 @@ test-latency:
 test-jitter:
 	@bash ./scripts/tests/jitter.sh
 
-test: test-packetloss test-bandwidth test-latency test-jitter
+test: test-go test-packetloss test-bandwidth test-latency test-jitter
 
 .PHONY: all generate build run test
