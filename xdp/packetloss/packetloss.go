@@ -48,17 +48,17 @@ func (p *PacketLoss) Start(ctx context.Context, logger *zap.Logger) {
 	}
 
 	logger.Info(
-		fmt.Sprintf("Packet loss started with rate %d%% on device %q",
+		fmt.Sprintf("Packetloss started with rate %d%% on device %q",
 			p.PacketLossRate,
 			p.NetworkInterface.Name,
 		),
 	)
 
 	p.ready = true
-
 	<-ctx.Done()
 
-	fmt.Printf("Packet loss stopped.")
+	p.ready = false
+	logger.Info(fmt.Sprintf("Packetloss stopped on device %q", p.NetworkInterface.Name))
 }
 
 func (p *PacketLoss) Ready() bool {

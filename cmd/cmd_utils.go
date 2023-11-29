@@ -42,7 +42,11 @@ func getLogger(logLevel string, productionMode bool) (*zap.Logger, error) {
 	}
 
 	var err error
-	cfg.Level, err = zap.ParseAtomicLevel(logLevel)
+	level := zap.NewAtomicLevel()
+	if err := level.UnmarshalText([]byte(logLevel)); err != nil {
+		return nil, fmt.Errorf("getLogger unmarshal level %q: %v", logLevel, err)
+	}
+	cfg.Level = level
 	if err != nil {
 		return nil, fmt.Errorf("getLogger: %v", err)
 	}

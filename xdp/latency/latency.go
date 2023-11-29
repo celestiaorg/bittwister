@@ -56,6 +56,9 @@ func (l *Latency) Start(ctx context.Context, logger *zap.Logger) {
 	if err := l.deleteTc(); err != nil {
 		logger.Fatal("failed to delete tc rule", zap.Error(err))
 	}
+
+	l.ready = false
+	logger.Info(fmt.Sprintf("Latency/Jitter stopped on device %q", l.NetworkInterface.Name))
 }
 
 func (l *Latency) Ready() bool {
