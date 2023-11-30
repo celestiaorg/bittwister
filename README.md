@@ -69,39 +69,45 @@ Please note that all the endpoints have to be prefixed with `/api/v1`.
 - **Endpoint:** `/packetloss`
   - `/start`
     - **Method:** POST
-    - **Description:** Start packet loss simulation.
+    - **Description:** Start packetloss service.
   - `/status`
     - **Method:** GET
-    - **Description:** Get packet loss status.
+    - **Description:** Get packetloss status.
   - `/stop`
     - **Method:** POST
-    - **Description:** Stop packet loss simulation.
+    - **Description:** Stop packetloss service.
+
+**example:**
+
+```bash
+curl -iX POST http://localhost:9007/api/v1/packetloss/start --data '{"network_interface":"eth0","packet_loss_rate":30}'
+```
 
 #### Bandwidth
 
 - **Endpoint:** `/bandwidth`
   - `/start`
     - **Method:** POST
-    - **Description:** Start bandwidth simulation.
+    - **Description:** Start bandwidth service.
   - `/status`
     - **Method:** GET
     - **Description:** Get bandwidth status.
   - `/stop`
     - **Method:** POST
-    - **Description:** Stop bandwidth simulation.
+    - **Description:** Stop bandwidth service.
 
 #### Latency
 
 - **Endpoint:** `/latency`
   - `/start`
     - **Method:** POST
-    - **Description:** Start latency simulation.
+    - **Description:** Start latency service.
   - `/status`
     - **Method:** GET
     - **Description:** Get latency status.
   - `/stop`
     - **Method:** POST
-    - **Description:** Stop latency simulation.
+    - **Description:** Stop latency service.
 
 #### Services
 
