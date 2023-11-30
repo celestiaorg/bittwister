@@ -44,7 +44,8 @@ func (p *PacketLoss) Start(ctx context.Context, logger *zap.Logger) {
 	<-ctx.Done()
 
 	// Update the map with a rate of 0 to disable the packetloss.
-	err = x.BpfObjs.PacketlossRateMap.Update(key, 0, ebpf.UpdateAny)
+	zero := int32(0)
+	err = x.BpfObjs.PacketlossRateMap.Update(key, zero, ebpf.UpdateAny)
 	if err != nil {
 		logger.Error(fmt.Sprintf("could not update packetloss drop rate to zero: %v", err))
 		return

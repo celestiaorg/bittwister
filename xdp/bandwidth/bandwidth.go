@@ -44,7 +44,8 @@ func (b *Bandwidth) Start(ctx context.Context, logger *zap.Logger) {
 	<-ctx.Done()
 
 	// Update the map with a rate of 0 to disable the bandwidth limiter.
-	err = x.BpfObjs.BandwidthLimitMap.Update(key, 0, ebpf.UpdateAny)
+	zero := int64(0)
+	err = x.BpfObjs.BandwidthLimitMap.Update(key, zero, ebpf.UpdateAny)
 	if err != nil {
 		logger.Error(fmt.Sprintf("could not update bandwidth limit rate to zero: %v", err))
 		return

@@ -17,10 +17,11 @@ type XdpLoader interface {
 }
 
 type XdpObject struct {
-	BpfObjs       bpfObjects
-	Link          link.Link
-	totalServices int32
-	mu            sync.Mutex
+	BpfObjs           bpfObjects
+	Link              link.Link
+	totalServices     int32
+	mu                sync.Mutex
+	netInterfaceIndex int
 }
 
 var xdpObject XdpObject
@@ -33,9 +34,11 @@ func GetPreparedXdpObject(netInterfaceIndex int) (*XdpObject, error) {
 	// We add this once, so we know how many services are using this object.
 	xdpObject.totalServices++
 
-	if xdpObject.Link != nil {
+	if xdpObject.Link != nil && xdpObject.netInterfaceIndex == netInterfaceIndex {
 		return &xdpObject, nil
 	}
+	xdpObject.netInterfaceIndex = netInterfaceIndex
+
 	// Load pre-compiled programs into the kernel.
 	err := loadBpfObjects(&xdpObject.BpfObjs, nil)
 	if err != nil {
