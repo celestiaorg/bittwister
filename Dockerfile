@@ -31,7 +31,7 @@ FROM docker.io/alpine:3.18.4 AS test
 
 WORKDIR /app/
 COPY --from=development /build .
-RUN apk update && apk add iperf3 iproute2
+RUN apk update && apk add iperf3 iproute2 curl
 
 ENTRYPOINT ["./bittwister"]
 
@@ -41,6 +41,6 @@ FROM docker.io/alpine:3.18.4 AS production
 
 WORKDIR /app/
 COPY --from=development /build .
-RUN apk update && apk add iproute2
+RUN apk update && apk add iproute2 curl
 
 ENTRYPOINT ["./bittwister", "start", "-d", "eth0", "-p", "50"]
