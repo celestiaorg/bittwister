@@ -75,17 +75,25 @@ func (l *Latency) deleteTc() error {
 	if !l.isThereTcNetEmRule() {
 		return nil
 	}
-	return exec.Command(l.TcBinPath, "qdisc", "del", "dev", l.NetworkInterface.Name, "root").Run()
+	out, err := exec.Command(l.TcBinPath, "qdisc", "del", "dev", l.NetworkInterface.Name, "root").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to delete tc rule: %w, output: `%s`", err, string(out))
+	}
+	return nil
 }
 
 func (l *Latency) addTc() error {
 	latencyStr := fmt.Sprintf("%dms", l.Latency.Milliseconds())
 	jitterStr := fmt.Sprintf("%dms", l.Jitter.Milliseconds())
-	return exec.Command(l.TcBinPath, "qdisc", "add", "dev", l.NetworkInterface.Name, "root", "netem", "delay", latencyStr, jitterStr).Run()
+	out, err := exec.Command(l.TcBinPath, "qdisc", "add", "dev", l.NetworkInterface.Name, "root", "netem", "delay", latencyStr, jitterStr).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to add tc rule: %w, output: `%s`", err, string(out))
+	}
+	return nil
 }
 
 func (l *Latency) isThereTcNetEmRule() bool {
-	out, err := exec.Command(l.TcBinPath, "qdisc", "show", "dev", l.NetworkInterface.Name).Output()
+	out, err := exec.Command(l.TcBinPath, "qdisc", "show", "dev", l.NetworkInterface.Name).CombinedOutput()
 	if err != nil {
 		return false
 	}
