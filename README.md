@@ -69,6 +69,7 @@ Please note that all the endpoints have to be prefixed with `/api/v1`.
 - **Endpoint:** `/packetloss`
   - `/start`
     - **Method:** POST
+    - **Data**: `{"network_interface":"eth0","packet_loss_rate":30}`
     - **Description:** Start packetloss service.
   - `/status`
     - **Method:** GET
@@ -88,6 +89,7 @@ curl -iX POST http://localhost:9007/api/v1/packetloss/start --data '{"network_in
 - **Endpoint:** `/bandwidth`
   - `/start`
     - **Method:** POST
+    - **Data**: `{"network_interface":"eth0","bandwidth":1048576}`
     - **Description:** Start bandwidth service.
   - `/status`
     - **Method:** GET
@@ -101,6 +103,7 @@ curl -iX POST http://localhost:9007/api/v1/packetloss/start --data '{"network_in
 - **Endpoint:** `/latency`
   - `/start`
     - **Method:** POST
+    - **Data**: `{"network_interface":"eth0","latency":100,"jitter":10}`
     - **Description:** Start latency service.
   - `/status`
     - **Method:** GET
