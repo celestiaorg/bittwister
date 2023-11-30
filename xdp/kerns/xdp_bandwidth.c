@@ -32,11 +32,24 @@ struct
   __uint(max_entries, MAX_MAP_ENTRIES);
 } bandwidth_limit_map SEC(".maps");
 
-SEC("xdp")
 int xdp_bandwidth_limit(struct xdp_md *ctx)
 {
-  __u64 current_timestamp = bpf_ktime_get_ns();
   __u32 key = 0;
+  __u64 *bandwidth_limit_ptr = bpf_map_lookup_elem(&bandwidth_limit_map, &key);
+  if (!bandwidth_limit_ptr)
+  {
+    // if it has not set by the user space program,
+    // or the service is not started yet
+    return XDP_PASS;
+  }
+
+  if (*bandwidth_limit_ptr == 0)
+  {
+    // If the service is stopped
+    return XDP_PASS;
+  }
+
+  __u64 current_timestamp = bpf_ktime_get_ns();
   __u64 *last_time_window_start = bpf_map_lookup_elem(&last_packet_timestamp, &key);
   if (!last_time_window_start)
   {
@@ -65,16 +78,9 @@ int xdp_bandwidth_limit(struct xdp_md *ctx)
     bpf_map_update_elem(&last_packet_timestamp, &key, &current_timestamp, BPF_ANY);
   }
 
-  // Look it up only once for performance purposes
-  static __u64 allowed_bytes = 0; // number of bytes per window
-  if (allowed_bytes == 0)
-  {
-    __u64 *bandwidth_limit_ptr = bpf_map_lookup_elem(&bandwidth_limit_map, &key);
-    if (!bandwidth_limit_ptr)
-      return XDP_ABORTED;
-
-    allowed_bytes = (*bandwidth_limit_ptr / 8 * TIME_WINDOW_SEC); // divide by 8 to convert from bits to bytes
-  }
+  // number of bytes per window
+  // divide by 8 to convert from bits to bytes
+  __u64 allowed_bytes = (*bandwidth_limit_ptr / 8 * TIME_WINDOW_SEC);
 
   __u64 *accumulated_bytes = bpf_map_lookup_elem(&byte_counter, &key);
   if (!accumulated_bytes)
@@ -85,5 +91,3 @@ int xdp_bandwidth_limit(struct xdp_md *ctx)
 
   return XDP_PASS;
 }
-
-char _license[] SEC("license") = "GPL";
