@@ -59,6 +59,8 @@ func (a *RESTApiV1) Serve(addr, originAllowed string) error {
 	return a.server.ListenAndServe()
 }
 
+// Shutdown stops the API server
+// Please note that this function does not necessarily stop the running XDP services
 func (a *RESTApiV1) Shutdown() error {
 	if a.server == nil {
 		return errors.New("server is not running")
