@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// PacketlossStart implements POST /packetloss/start
+// LatencyStart implements POST /latency/start
 func (a *RESTApiV1) LatencyStart(resp http.ResponseWriter, req *http.Request) {
 	var body LatencyStartRequest
 	if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
@@ -40,7 +40,7 @@ func (a *RESTApiV1) LatencyStart(resp http.ResponseWriter, req *http.Request) {
 					Type:    APIMetaMessageTypeError,
 					Slug:    SlugTypeError,
 					Title:   "Type cast error",
-					Message: "could not cast netRestrictService.service to *packetloss.PacketLoss",
+					Message: "could not cast netRestrictService.service to *latency.Latency",
 				},
 				http.StatusInternalServerError)
 			return
