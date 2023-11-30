@@ -84,6 +84,12 @@ var startCmd = &cobra.Command{
 				NetworkInterface: iface,
 			}
 			go pl.Start(ctx, logger)
+			defer func() {
+				// wait for the service to be finished with the cleanup
+				for pl.Ready() {
+					time.Sleep(1 * time.Second)
+				}
+			}()
 		}
 
 		/*---------*/
@@ -94,6 +100,12 @@ var startCmd = &cobra.Command{
 				NetworkInterface: iface,
 			}
 			go b.Start(ctx, logger)
+			defer func() {
+				// wait for the service to be finished with the cleanup
+				for b.Ready() {
+					time.Sleep(1 * time.Second)
+				}
+			}()
 		}
 
 		/*---------*/
@@ -106,6 +118,12 @@ var startCmd = &cobra.Command{
 				TcBinPath:        flagsStart.tcBinPath,
 			}
 			go l.Start(ctx, logger)
+			defer func() {
+				// wait for the service to be finished with the cleanup
+				for l.Ready() {
+					time.Sleep(1 * time.Second)
+				}
+			}()
 		}
 
 		/*---------*/
