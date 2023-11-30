@@ -62,6 +62,8 @@ Flags:
 
 ### API Endpoints
 
+Please note that all the endpoints have to be prefixed with `/api/v1`.
+
 #### Packet Loss
 
 - **Endpoint:** `/packetloss`
