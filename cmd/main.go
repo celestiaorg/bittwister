@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/celestiaorg/bittwister/cmd"
+	"github.com/celestiaorg/bittwister/cmd/cmd"
 )
 
 func main() {
