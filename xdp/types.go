@@ -27,7 +27,6 @@ type XdpObject struct {
 var xdpObject XdpObject
 
 func GetPreparedXdpObject(netInterfaceIndex int) (*XdpObject, error) {
-
 	xdpObject.mu.Lock()
 	defer xdpObject.mu.Unlock()
 

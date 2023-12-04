@@ -11,6 +11,9 @@ build:
 docker:
 	docker build -t bittwister .
 
+lint:
+	golangci-lint run ./...
+
 test-go:
 	sudo go test -v ./... -count=1 -p=1
 

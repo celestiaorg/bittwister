@@ -135,7 +135,6 @@ func netServiceStop(resp http.ResponseWriter, ns *netRestrictService) error {
 		Slug:  SlugServiceNotReady,
 		Title: "Service stopped",
 	})
-
 	if err != nil {
 		return fmt.Errorf("sendJSON failed: %w", err)
 	}
@@ -164,7 +163,6 @@ func netServiceStatus(resp http.ResponseWriter, ns *netRestrictService) error {
 		Slug:  statusSlug,
 		Title: "Service status",
 	})
-
 	if err != nil {
 		return fmt.Errorf("sendJSON failed: %w", err)
 	}
