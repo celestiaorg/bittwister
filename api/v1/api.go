@@ -10,9 +10,10 @@ import (
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
+const baseUrl = "/api/v1"
 
 func path(endpoint string) string {
-	return fmt.Sprintf("/api/v1%s", endpoint)
+	return fmt.Sprintf("%s%s", baseUrl, endpoint)
 }
 
 func NewRESTApiV1(productionMode bool, logger *zap.Logger) *RESTApiV1 {
