@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/celestiaorg/bittwister/cmd/cmd"
+	"github.com/celestiaorg/bittwister/cmd/bittwister"
 )
 
 func main() {
-	cmd.Execute()
+	bittwister.Execute()
 }
