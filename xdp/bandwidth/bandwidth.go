@@ -7,54 +7,49 @@ import (
 
 	"github.com/celestiaorg/bittwister/xdp"
 	"github.com/cilium/ebpf"
-	"go.uber.org/zap"
 )
 
 type Bandwidth struct {
 	NetworkInterface *net.Interface
 	Limit            int64 // Bytes per second
-	ready            bool
 }
 
 var _ xdp.XdpLoader = (*Bandwidth)(nil)
 
-func (b *Bandwidth) Start(ctx context.Context, logger *zap.Logger) {
+func (b *Bandwidth) Start() (xdp.CancelFunc, error) {
 	x, err := xdp.GetPreparedXdpObject(b.NetworkInterface.Index)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Preparing XDP objects: %v", err))
-		return
+		return nil, fmt.Errorf("prepare XDP object: %w", err)
 	}
-	defer x.Close()
 
 	key := uint32(0)
 	err = x.BpfObjs.BandwidthLimitMap.Update(key, b.Limit, ebpf.UpdateAny)
 	if err != nil {
-		logger.Error(fmt.Sprintf("could not update bandwidth limit rate: %v", err))
-		return
+		if cErr := x.Close(); cErr != nil {
+			return nil, fmt.Errorf("close XDP object: %w", cErr)
+		}
+		return nil, fmt.Errorf("update bandwidth limit rate: %w", err)
 	}
 
-	logger.Info(
-		fmt.Sprintf("Bandwidth limiter started with rate %d bps on device %q",
-			b.Limit,
-			b.NetworkInterface.Name,
-		),
-	)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		<-ctx.Done()
+	}()
 
-	b.ready = true
-	<-ctx.Done()
+	cancelFunc := xdp.CancelFunc(func() error {
+		// Update the map with a rate of 0 to disable the bandwidth limiter.
+		zero := int64(0)
+		err := x.BpfObjs.BandwidthLimitMap.Update(key, zero, ebpf.UpdateAny)
+		if err != nil {
+			return fmt.Errorf("update bandwidth limit rate to zero: %w", err)
+		}
 
-	// Update the map with a rate of 0 to disable the bandwidth limiter.
-	zero := int64(0)
-	err = x.BpfObjs.BandwidthLimitMap.Update(key, zero, ebpf.UpdateAny)
-	if err != nil {
-		logger.Error(fmt.Sprintf("could not update bandwidth limit rate to zero: %v", err))
-		return
-	}
+		if err := x.Close(); err != nil {
+			return fmt.Errorf("close XDP object: %w", err)
+		}
+		cancel()
+		return nil
+	})
 
-	b.ready = false
-	logger.Info(fmt.Sprintf("Bandwidth limiter stopped on device %q", b.NetworkInterface.Name))
-}
-
-func (b *Bandwidth) Ready() bool {
-	return b.ready
+	return cancelFunc, nil
 }
