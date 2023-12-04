@@ -47,6 +47,83 @@ sudo ./bin/bittwister start -d eth0 -l 100
 sudo ./bin/bittwister start -d eth0 -j 10
 ```
 
+### Start the API server
+
+```bash
+sudo ./bin/bittwister serve [flags]
+
+Flags:
+  -h, --help                    help for serve
+      --log-level string        log level (e.g. debug, info, warn, error, dpanic, panic, fatal) (default "info")
+      --origin-allowed string   origin allowed for CORS (default "*")
+      --production-mode         production mode (e.g. disable debug logs)
+      --serve-addr string       address to serve on (default "localhost:9007")
+```
+
+### API Endpoints
+
+Please note that all the endpoints have to be prefixed with `/api/v1`.
+
+#### Packet Loss
+
+- **Endpoint:** `/packetloss`
+  - `/start`
+    - **Method:** POST
+    - **Data**: `{"network_interface":"eth0","packet_loss_rate":30}`
+    - **Description:** Start packetloss service.
+  - `/status`
+    - **Method:** GET
+    - **Description:** Get packetloss status.
+  - `/stop`
+    - **Method:** POST
+    - **Description:** Stop packetloss service.
+
+**example:**
+
+```bash
+curl -iX POST http://localhost:9007/api/v1/packetloss/start --data '{"network_interface":"eth0","packet_loss_rate":30}'
+```
+
+#### Bandwidth
+
+- **Endpoint:** `/bandwidth`
+  - `/start`
+    - **Method:** POST
+    - **Data**: `{"network_interface":"eth0","bandwidth":1048576}`
+    - **Description:** Start bandwidth service.
+  - `/status`
+    - **Method:** GET
+    - **Description:** Get bandwidth status.
+  - `/stop`
+    - **Method:** POST
+    - **Description:** Stop bandwidth service.
+
+#### Latency
+
+- **Endpoint:** `/latency`
+  - `/start`
+    - **Method:** POST
+    - **Data**: `{"network_interface":"eth0","latency":100,"jitter":10}`
+    - **Description:** Start latency service.
+  - `/status`
+    - **Method:** GET
+    - **Description:** Get latency status.
+  - `/stop`
+    - **Method:** POST
+    - **Description:** Stop latency service.
+
+#### Services
+
+- **Endpoint:** `/services`
+  - `/status`
+    - **Method:** GET
+    - **Description:** Get all network restriction services statuses and their configured parameters.
+
+### SDK for Go
+
+The BitTwister SDK for Go provides a convenient interface to interact with the BitTwister tool, which applies network restrictions on a network interface, including bandwidth limitation, packet loss, latency, and jitter.
+More details about the SDK and how to use it can be found [here](./sdk/README.md).
+
 ### Using Bittwister in Kubernetes
 
 To utilize Bittwister within a Kubernetes environment, specific configurations must be added to the container.
@@ -74,6 +151,16 @@ The tests require docker to be installed. To run all the tests, execute the foll
 ```bash
 make test
 ```
+
+### Go unit tests
+
+The Go unit tests can be run by executing the following command:
+
+```bash
+make test-go
+```
+
+**Note**: Root permission is required to run the unit tests. The tests are run on the loopback interface.
 
 ### Test Packet Loss
 
