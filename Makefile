@@ -6,7 +6,7 @@ generate:
 	go generate ./...
 
 build:
-	go build -o bin/$(BINARY_NAME) -v .
+	go build -o bin/$(BINARY_NAME) -v ./cmd
 
 docker:
 	docker build -t bittwister .

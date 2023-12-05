@@ -43,4 +43,5 @@ WORKDIR /app/
 COPY --from=development /build .
 RUN apk update && apk add iproute2 curl
 
-ENTRYPOINT ["./bittwister", "start", "-d", "eth0", "-p", "50"]
+ENV SERVE_ADDR="localhost:9001"
+CMD ["sh", "-c", "./bittwister serve --serve-addr ${SERVE_ADDR}"]
