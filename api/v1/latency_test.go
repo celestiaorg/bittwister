@@ -11,29 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func (s *APITestSuite) TestLatencyStart() {
-	t := s.T()
-
-	reqBody := api.LatencyStartRequest{
-		NetworkInterfaceName: s.ifaceName,
-		Latency:              100,
-		Jitter:               50,
-	}
-	jsonBody, err := json.Marshal(reqBody)
-	require.NoError(t, err)
-
-	req, err := http.NewRequest(http.MethodPost, "/api/v1/latency/start", bytes.NewReader(jsonBody))
-	require.NoError(t, err)
-
-	rr := httptest.NewRecorder()
-	s.restAPI.LatencyStart(rr, req)
-	// need to stop it to release the network interface for other tests
-	defer s.restAPI.LatencyStop(rr, nil)
-
-	assert.Equal(t, http.StatusOK, rr.Code)
-}
-
-func (s *APITestSuite) TestLatencyStop() {
+func (s *APITestSuite) TestLatencyStartStop() {
 	t := s.T()
 
 	reqBody := api.LatencyStartRequest{
@@ -50,13 +28,15 @@ func (s *APITestSuite) TestLatencyStop() {
 	rr := httptest.NewRecorder()
 	s.restAPI.LatencyStart(rr, req)
 
-	require.NoError(t, waitForService(s.restAPI.LatencyStatus))
+	slug, err := getServiceStatusSlug(s.restAPI.LatencyStatus)
+	require.NoError(t, err)
+	assert.Equal(t, api.SlugServiceReady, slug)
 
 	rr = httptest.NewRecorder()
 	s.restAPI.LatencyStop(rr, nil)
 	require.Equal(t, http.StatusOK, rr.Code)
 
-	slug, err := getServiceStatusSlug(s.restAPI.LatencyStatus)
+	slug, err = getServiceStatusSlug(s.restAPI.LatencyStatus)
 	require.NoError(t, err)
 	assert.Equal(t, api.SlugServiceNotReady, slug)
 }
@@ -84,7 +64,9 @@ func (s *APITestSuite) TestLatencyStatus() {
 	rr := httptest.NewRecorder()
 	s.restAPI.LatencyStart(rr, req)
 
-	require.NoError(t, waitForService(s.restAPI.LatencyStatus))
+	slug, err = getServiceStatusSlug(s.restAPI.LatencyStatus)
+	require.NoError(t, err)
+	assert.Equal(t, api.SlugServiceReady, slug)
 
 	slug, err = getServiceStatusSlug(s.restAPI.LatencyStatus)
 	require.NoError(t, err)

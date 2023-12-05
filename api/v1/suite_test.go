@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	api "github.com/celestiaorg/bittwister/api/v1"
 	"github.com/stretchr/testify/require"
@@ -52,23 +51,7 @@ func getServiceStatusSlug(statusFunc func(http.ResponseWriter, *http.Request)) (
 	if err != nil {
 		return "", err
 	}
-
 	return msg.Slug, nil
-}
-
-// Wait for the service to be started
-func waitForService(statusFunc func(http.ResponseWriter, *http.Request)) error {
-	for i := 0; i < 10; i++ {
-		slug, err := getServiceStatusSlug(statusFunc)
-		if err != nil {
-			return err
-		}
-		if slug == api.SlugServiceReady {
-			return nil
-		}
-		time.Sleep(500 * time.Millisecond)
-	}
-	return errors.New("timeout waiting for service to start")
 }
 
 func getLoopbackInterfaceName() (string, error) {

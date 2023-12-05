@@ -28,7 +28,6 @@ func (a *RESTApiV1) BandwidthStart(resp http.ResponseWriter, req *http.Request) 
 			service: &bandwidth.Bandwidth{
 				Limit: body.Limit,
 			},
-			logger: a.logger,
 		}
 	} else {
 		bw, ok := a.bw.service.(*bandwidth.Bandwidth)

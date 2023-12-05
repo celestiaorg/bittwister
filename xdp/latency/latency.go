@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/celestiaorg/bittwister/xdp"
-	"go.uber.org/zap"
 )
 
 type Latency struct {
@@ -17,52 +16,43 @@ type Latency struct {
 	Latency          time.Duration
 	Jitter           time.Duration
 	TcBinPath        string // default: tc
-	ready            bool
 }
 
 var _ xdp.XdpLoader = (*Latency)(nil)
 
 // Latency uses TC under the hood to impose latency and jitter on packets.
 // This is a temporary solution until we have a better way to do this; probably in XDP.
-func (l *Latency) Start(ctx context.Context, logger *zap.Logger) {
+func (l *Latency) Start() (xdp.CancelFunc, error) {
 	if l.TcBinPath == "" {
 		l.TcBinPath = "tc"
 	}
 
 	if !l.isTcInstalled() {
-		logger.Fatal("tc command not found")
+		return nil, fmt.Errorf("tc command not found")
 	}
 
 	if err := l.deleteTc(); err != nil {
-		logger.Fatal("failed to delete tc rule", zap.Error(err))
+		return nil, err
 	}
 
 	if err := l.addTc(); err != nil {
-		logger.Fatal("failed to set latency/jitter using tc", zap.Error(err))
+		return nil, fmt.Errorf("set latency/jitter using tc: %w", err)
 	}
 
-	logger.Info(
-		fmt.Sprintf("Latency/Jitter started with %d milliseconds latency and %d jitter on device %q",
-			l.Latency.Milliseconds(),
-			l.Jitter.Milliseconds(),
-			l.NetworkInterface.Name,
-		),
-	)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		<-ctx.Done()
+	}()
 
-	l.ready = true
-	<-ctx.Done()
+	cancelFunc := xdp.CancelFunc(func() error {
+		if err := l.deleteTc(); err != nil {
+			return err
+		}
+		cancel()
+		return nil
+	})
 
-	// Cleanup
-	if err := l.deleteTc(); err != nil {
-		logger.Fatal("failed to delete tc rule", zap.Error(err))
-	}
-
-	l.ready = false
-	logger.Info(fmt.Sprintf("Latency/Jitter stopped on device %q", l.NetworkInterface.Name))
-}
-
-func (l *Latency) Ready() bool {
-	return l.ready
+	return cancelFunc, nil
 }
 
 // Check if the tc command is installed.
@@ -75,17 +65,25 @@ func (l *Latency) deleteTc() error {
 	if !l.isThereTcNetEmRule() {
 		return nil
 	}
-	return exec.Command(l.TcBinPath, "qdisc", "del", "dev", l.NetworkInterface.Name, "root").Run()
+	out, err := exec.Command(l.TcBinPath, "qdisc", "del", "dev", l.NetworkInterface.Name, "root").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("delete tc rule: %w, output: `%s`", err, string(out))
+	}
+	return nil
 }
 
 func (l *Latency) addTc() error {
 	latencyStr := fmt.Sprintf("%dms", l.Latency.Milliseconds())
 	jitterStr := fmt.Sprintf("%dms", l.Jitter.Milliseconds())
-	return exec.Command(l.TcBinPath, "qdisc", "add", "dev", l.NetworkInterface.Name, "root", "netem", "delay", latencyStr, jitterStr).Run()
+	out, err := exec.Command(l.TcBinPath, "qdisc", "add", "dev", l.NetworkInterface.Name, "root", "netem", "delay", latencyStr, jitterStr).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("add tc rule: %w, output: `%s`", err, string(out))
+	}
+	return nil
 }
 
 func (l *Latency) isThereTcNetEmRule() bool {
-	out, err := exec.Command(l.TcBinPath, "qdisc", "show", "dev", l.NetworkInterface.Name).Output()
+	out, err := exec.Command(l.TcBinPath, "qdisc", "show", "dev", l.NetworkInterface.Name).CombinedOutput()
 	if err != nil {
 		return false
 	}

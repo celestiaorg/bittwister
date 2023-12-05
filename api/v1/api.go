@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
+
 const baseUrl = "/api/v1"
 
 func path(endpoint string) string {

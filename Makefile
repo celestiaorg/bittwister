@@ -6,10 +6,13 @@ generate:
 	go generate ./...
 
 build:
-	go build -o bin/$(BINARY_NAME) -v .
+	go build -o bin/$(BINARY_NAME) -v ./cmd
 
 docker:
 	docker build -t bittwister .
+
+lint:
+	golangci-lint run ./...
 
 test-go:
 	sudo go test -v ./... -count=1 -p=1

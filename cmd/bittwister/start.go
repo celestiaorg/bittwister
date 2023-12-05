@@ -1,7 +1,6 @@
-package cmd
+package bittwister
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"github.com/celestiaorg/bittwister/xdp/latency"
 	"github.com/celestiaorg/bittwister/xdp/packetloss"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 const (
@@ -73,9 +73,6 @@ var startCmd = &cobra.Command{
 			return fmt.Errorf("lookup network device %q: %v", flagsStart.networkInterfaceName, err)
 		}
 
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
 		/*---------*/
 
 		if flagsStart.packetLossRate > 0 {
@@ -83,7 +80,17 @@ var startCmd = &cobra.Command{
 				PacketLossRate:   flagsStart.packetLossRate,
 				NetworkInterface: iface,
 			}
-			go pl.Start(ctx, logger)
+			cancel, err := pl.Start()
+			if err != nil {
+				return err
+			}
+			logger.Info("Packetloss started", zap.Int32("rate (%)", flagsStart.packetLossRate), zap.String("device", flagsStart.networkInterfaceName))
+			defer func() {
+				if err := cancel(); err != nil {
+					logger.Error("cancel packetloss", zap.Error(err))
+				}
+				logger.Info("Packetloss stopped", zap.String("device", flagsStart.networkInterfaceName))
+			}()
 		}
 
 		/*---------*/
@@ -93,7 +100,17 @@ var startCmd = &cobra.Command{
 				Limit:            flagsStart.bandwidth,
 				NetworkInterface: iface,
 			}
-			go b.Start(ctx, logger)
+			cancel, err := b.Start()
+			if err != nil {
+				return err
+			}
+			logger.Info("Bandwidth started", zap.Int64("limit (bps)", flagsStart.bandwidth), zap.String("device", flagsStart.networkInterfaceName))
+			defer func() {
+				if err := cancel(); err != nil {
+					logger.Error("cancel bandwidth", zap.Error(err))
+				}
+				logger.Info("Bandwidth stopped", zap.String("device", flagsStart.networkInterfaceName))
+			}()
 		}
 
 		/*---------*/
@@ -105,7 +122,20 @@ var startCmd = &cobra.Command{
 				NetworkInterface: iface,
 				TcBinPath:        flagsStart.tcBinPath,
 			}
-			go l.Start(ctx, logger)
+			cancel, err := l.Start()
+			if err != nil {
+				return err
+			}
+			logger.Info("Latency/Jitter started",
+				zap.Int64("latency (ms)", l.Latency.Milliseconds()),
+				zap.Int64("jitter (ms)", l.Jitter.Milliseconds()),
+				zap.String("device", flagsStart.networkInterfaceName))
+			defer func() {
+				if err := cancel(); err != nil {
+					logger.Error("cancel latency", zap.Error(err))
+				}
+				logger.Info("Latency/Jitter stopped", zap.String("device", flagsStart.networkInterfaceName))
+			}()
 		}
 
 		/*---------*/
@@ -116,7 +146,6 @@ var startCmd = &cobra.Command{
 
 		<-signalChan
 		logger.Info("Received interrupt signal. Shutting down...")
-		cancel()
 
 		return nil
 	},
