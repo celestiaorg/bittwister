@@ -30,7 +30,6 @@ func (a *RESTApiV1) LatencyStart(resp http.ResponseWriter, req *http.Request) {
 				Latency: time.Duration(body.Latency) * time.Millisecond,
 				Jitter:  time.Duration(body.Jitter) * time.Millisecond,
 			},
-			logger: a.logger,
 		}
 	} else {
 		lt, ok := a.lt.service.(*latency.Latency)
@@ -40,7 +39,7 @@ func (a *RESTApiV1) LatencyStart(resp http.ResponseWriter, req *http.Request) {
 					Type:    APIMetaMessageTypeError,
 					Slug:    SlugTypeError,
 					Title:   "Type cast error",
-					Message: "could not cast netRestrictService.service to *packetloss.PacketLoss",
+					Message: "could not cast netRestrictService.service to *latency.Latency",
 				},
 				http.StatusInternalServerError)
 			return

@@ -32,7 +32,8 @@ func GetPreparedXdpObject(netInterfaceIndex int) (*XdpObject, error) {
 	// We add this once, so we know how many services are using this object.
 	xdpObject.totalServices++
 
-	if xdpObject.Link != nil && xdpObject.netInterfaceIndex == netInterfaceIndex {
+	if xdpObject.Link != nil &&
+		xdpObject.netInterfaceIndex == netInterfaceIndex {
 		return &xdpObject, nil
 	}
 	xdpObject.netInterfaceIndex = netInterfaceIndex
@@ -69,5 +70,7 @@ func (x *XdpObject) Close() error {
 			return err
 		}
 	}
+	x.Link = nil
+
 	return x.BpfObjs.Close()
 }

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -11,16 +10,14 @@ import (
 	"github.com/celestiaorg/bittwister/xdp/bandwidth"
 	"github.com/celestiaorg/bittwister/xdp/latency"
 	"github.com/celestiaorg/bittwister/xdp/packetloss"
-	"go.uber.org/zap"
 )
 
 const ServiceStopTimeout = 5 // Seconds
 
 type netRestrictService struct {
 	service xdp.XdpLoader
-	ctx     context.Context
-	cancel  context.CancelFunc
-	logger  *zap.Logger
+	cancel  xdp.CancelFunc
+	ready   bool
 }
 
 func (n *netRestrictService) Start(networkInterfaceName string) error {
@@ -43,8 +40,11 @@ func (n *netRestrictService) Start(networkInterfaceName string) error {
 		return fmt.Errorf("could not cast netRestrictService.service to *packetloss.PacketLoss, *bandwidth.Bandwidth or *latency.Latency")
 	}
 
-	n.ctx, n.cancel = context.WithCancel(context.Background())
-	go n.service.Start(n.ctx, n.logger)
+	n.cancel, err = n.service.Start()
+	if err != nil {
+		return fmt.Errorf("start service: %w", err)
+	}
+	n.ready = true
 
 	return nil
 }
@@ -54,11 +54,10 @@ func (n *netRestrictService) Stop() error {
 		return ErrServiceNotStarted
 	}
 
-	n.cancel()
-
-	if n.service.Ready() {
-		return ErrServiceStopFailed
+	if err := n.cancel(); err != nil {
+		return fmt.Errorf("stop service: %w", err)
 	}
+	n.ready = false
 	return nil
 }
 
@@ -73,7 +72,7 @@ func netServiceStart(resp http.ResponseWriter, ns *netRestrictService, ifaceName
 		return ErrServiceNotInitialized
 	}
 
-	if ns.service.Ready() {
+	if ns.ready {
 		sendJSONError(resp, MetaMessage{
 			Type:    APIMetaMessageTypeError,
 			Slug:    SlugServiceAlreadyStarted,
@@ -94,6 +93,7 @@ func netServiceStart(resp http.ResponseWriter, ns *netRestrictService, ifaceName
 			http.StatusInternalServerError)
 		return err
 	}
+
 	return nil
 }
 
@@ -108,19 +108,29 @@ func netServiceStop(resp http.ResponseWriter, ns *netRestrictService) error {
 		return ErrServiceNotInitialized
 	}
 
-	ns.cancel()
+	if err := ns.Stop(); err != nil {
+		sendJSONError(resp,
+			MetaMessage{
+				Type:    APIMetaMessageTypeError,
+				Slug:    SlugServiceStopFailed,
+				Title:   "Service stop failed",
+				Message: err.Error(),
+			},
+			http.StatusInternalServerError)
+		return err
+	}
 
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 	timeout := ServiceStopTimeout * 1000 / 100
 	for range ticker.C {
 		timeout--
-		if !ns.service.Ready() || timeout <= 0 {
+		if !ns.ready || timeout <= 0 {
 			break
 		}
 	}
 
-	if ns.service.Ready() {
+	if ns.ready {
 		sendJSONError(resp, MetaMessage{
 			Type:    APIMetaMessageTypeError,
 			Slug:    SlugServiceStopFailed,
@@ -154,7 +164,7 @@ func netServiceStatus(resp http.ResponseWriter, ns *netRestrictService) error {
 	}
 
 	statusSlug := SlugServiceNotReady
-	if ns.service.Ready() {
+	if ns.ready {
 		statusSlug = SlugServiceReady
 	}
 

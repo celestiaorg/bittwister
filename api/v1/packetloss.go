@@ -29,7 +29,6 @@ func (a *RESTApiV1) PacketlossStart(resp http.ResponseWriter, req *http.Request)
 				NetworkInterface: nil,
 				PacketLossRate:   body.PacketLossRate,
 			},
-			logger: a.logger,
 		}
 	} else {
 		pl, ok := a.pl.service.(*packetloss.PacketLoss)
