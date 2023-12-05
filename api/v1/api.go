@@ -14,7 +14,7 @@ import (
 const baseUrl = "/api/v1"
 
 func path(endpoint string) string {
-	return fmt.Sprintf("%s%s", baseUrl, endpoint)
+	return baseUrl + endpoint
 }
 
 func NewRESTApiV1(productionMode bool, logger *zap.Logger) *RESTApiV1 {
