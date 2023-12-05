@@ -28,7 +28,6 @@ func (a *RESTApiV1) BandwidthStart(resp http.ResponseWriter, req *http.Request) 
 			service: &bandwidth.Bandwidth{
 				Limit: body.Limit,
 			},
-			logger: a.logger,
 		}
 	} else {
 		bw, ok := a.bw.service.(*bandwidth.Bandwidth)
@@ -38,7 +37,7 @@ func (a *RESTApiV1) BandwidthStart(resp http.ResponseWriter, req *http.Request) 
 					Type:    APIMetaMessageTypeError,
 					Slug:    SlugTypeError,
 					Title:   "Type cast error",
-					Message: "could not cast netRestrictService.service to *packetloss.PacketLoss",
+					Message: "could not cast netRestrictService.service to *bandwidth.Bandwidth",
 				},
 				http.StatusInternalServerError)
 			return

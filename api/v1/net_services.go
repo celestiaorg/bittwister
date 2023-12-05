@@ -60,7 +60,7 @@ func (a *RESTApiV1) NetServicesStatus(resp http.ResponseWriter, req *http.Reques
 
 		out = append(out, ServiceStatus{
 			Name:                 name,
-			Ready:                ns.service.Ready(),
+			Ready:                ns.ready,
 			NetworkInterfaceName: netIfaceName,
 			Params:               params,
 		})

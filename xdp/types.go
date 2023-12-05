@@ -1,20 +1,19 @@
 package xdp
 
 import (
-	"context"
 	"fmt"
 	"sync"
 
 	"github.com/cilium/ebpf/link"
-	"go.uber.org/zap"
 )
 
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go bpf kerns/main.c -- -I../headers
 
 type XdpLoader interface {
-	Start(ctx context.Context, logger *zap.Logger)
-	Ready() bool
+	Start() (CancelFunc, error)
 }
+
+type CancelFunc func() error
 
 type XdpObject struct {
 	BpfObjs           bpfObjects
@@ -33,7 +32,8 @@ func GetPreparedXdpObject(netInterfaceIndex int) (*XdpObject, error) {
 	// We add this once, so we know how many services are using this object.
 	xdpObject.totalServices++
 
-	if xdpObject.Link != nil && xdpObject.netInterfaceIndex == netInterfaceIndex {
+	if xdpObject.Link != nil &&
+		xdpObject.netInterfaceIndex == netInterfaceIndex {
 		return &xdpObject, nil
 	}
 	xdpObject.netInterfaceIndex = netInterfaceIndex
@@ -70,5 +70,7 @@ func (x *XdpObject) Close() error {
 			return err
 		}
 	}
+	x.Link = nil
+
 	return x.BpfObjs.Close()
 }
