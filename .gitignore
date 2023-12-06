@@ -20,6 +20,5 @@
 # Go workspace file
 go.work
 bin/
-*.o
 run.sh
 .vscode/
