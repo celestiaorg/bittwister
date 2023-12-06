@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/celestiaorg/bittwister/xdp/packetloss"
 	"go.uber.org/zap"
 )
 
@@ -23,27 +22,20 @@ func (a *RESTApiV1) PacketlossStart(resp http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	if a.pl == nil {
-		a.pl = &netRestrictService{
-			service: &packetloss.PacketLoss{
-				NetworkInterface: nil,
-				PacketLossRate:   body.PacketLossRate,
+	if !ensureServiceInitialized(resp, a.pl) {
+		return
+	}
+
+	if err := a.pl.SetPacketLossRate(body.PacketLossRate); err != nil {
+		sendJSONError(resp,
+			MetaMessage{
+				Type:    APIMetaMessageTypeError,
+				Slug:    SlugServiceSetParamFailed,
+				Title:   "Service set param failed",
+				Message: err.Error(),
 			},
-		}
-	} else {
-		pl, ok := a.pl.service.(*packetloss.PacketLoss)
-		if !ok {
-			sendJSONError(resp,
-				MetaMessage{
-					Type:    APIMetaMessageTypeError,
-					Slug:    SlugTypeError,
-					Title:   "Type cast error",
-					Message: "could not cast netRestrictService.service to *packetloss.PacketLoss",
-				},
-				http.StatusInternalServerError)
-			return
-		}
-		pl.PacketLossRate = body.PacketLossRate
+			http.StatusInternalServerError)
+		return
 	}
 
 	err := netServiceStart(resp, a.pl, body.NetworkInterfaceName)

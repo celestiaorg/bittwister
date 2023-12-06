@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/celestiaorg/bittwister/xdp/bandwidth"
+	"github.com/celestiaorg/bittwister/xdp/latency"
+	"github.com/celestiaorg/bittwister/xdp/packetloss"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -23,6 +26,11 @@ func NewRESTApiV1(productionMode bool, logger *zap.Logger) *RESTApiV1 {
 		logger:         logger,
 		loggerNoStack:  logger.WithOptions(zap.AddStacktrace(zap.DPanicLevel)),
 		productionMode: productionMode,
+
+		// initialize the xdp services
+		bw: &netRestrictService{service: &bandwidth.Bandwidth{}},
+		lt: &netRestrictService{service: &latency.Latency{}},
+		pl: &netRestrictService{service: &packetloss.PacketLoss{}},
 	}
 
 	restAPI.router.HandleFunc("/", restAPI.IndexPage).Methods(http.MethodGet, http.MethodPost, http.MethodOptions, http.MethodPut, http.MethodHead)

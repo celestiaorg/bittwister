@@ -1,72 +1,97 @@
 package api
 
 import (
-	"net/http"
+	"fmt"
+	"net"
+	"time"
 
+	"github.com/celestiaorg/bittwister/xdp"
 	"github.com/celestiaorg/bittwister/xdp/bandwidth"
 	"github.com/celestiaorg/bittwister/xdp/latency"
 	"github.com/celestiaorg/bittwister/xdp/packetloss"
-	"go.uber.org/zap"
 )
 
-type ServiceStatus struct {
-	Name                 string                 `json:"name"`
-	Ready                bool                   `json:"ready"`
-	NetworkInterfaceName string                 `json:"network_interface_name"`
-	Params               map[string]interface{} `json:"params"` // key:value
+const ServiceStopTimeout = 5 // Seconds
+
+type netRestrictService struct {
+	service xdp.XdpLoader
+	cancel  xdp.CancelFunc
+	ready   bool
 }
 
-// NetServicesStatus implements GET /services/status
-func (a *RESTApiV1) NetServicesStatus(resp http.ResponseWriter, req *http.Request) {
-	out := make([]ServiceStatus, 0, 3)
-	for _, ns := range []*netRestrictService{a.pl, a.bw, a.lt} {
-		if ns == nil {
-			continue
-		}
-
-		var (
-			params       = make(map[string]interface{})
-			name         string
-			netIfaceName string
-		)
-
-		if s, ok := ns.service.(*packetloss.PacketLoss); ok {
-			name = "packetloss"
-			params["packet_loss_rate"] = s.PacketLossRate
-			netIfaceName = s.NetworkInterface.Name
-
-		} else if s, ok := ns.service.(*bandwidth.Bandwidth); ok {
-			name = "bandwidth"
-			params["limit"] = s.Limit
-			netIfaceName = s.NetworkInterface.Name
-
-		} else if s, ok := ns.service.(*latency.Latency); ok {
-			name = "latency"
-			params["latency_ms"] = s.Latency.Milliseconds()
-			params["jitter_ms"] = s.Jitter.Milliseconds()
-			netIfaceName = s.NetworkInterface.Name
-
-		} else {
-			sendJSONError(resp,
-				MetaMessage{
-					Type:    APIMetaMessageTypeError,
-					Slug:    SlugTypeError,
-					Title:   "Type cast error",
-					Message: "could not cast netRestrictService.service to *packetloss.PacketLoss, *bandwidth.Bandwidth or *latency.Latency",
-				},
-				http.StatusInternalServerError)
-			return
-		}
-
-		out = append(out, ServiceStatus{
-			Name:                 name,
-			Ready:                ns.ready,
-			NetworkInterfaceName: netIfaceName,
-			Params:               params,
-		})
+func (n *netRestrictService) Start(networkInterfaceName string) error {
+	if n.service == nil {
+		return ErrServiceNotInitialized
 	}
 
-	if err := sendJSON(resp, out); err != nil {
-		a.loggerNoStack.Error("sendJSON failed", zap.Error(err))
+	if err := n.SetNetworkInterface(networkInterfaceName); err != nil {
+		return fmt.Errorf("set network interface: %w", err)
 	}
+
+	var err error
+	n.cancel, err = n.service.Start()
+	if err != nil {
+		return fmt.Errorf("start service: %w", err)
+	}
+	n.ready = true
+
+	return nil
+}
+
+func (n *netRestrictService) Stop() error {
+	if n.cancel == nil {
+		return ErrServiceNotStarted
+	}
+
+	if err := n.cancel(); err != nil {
+		return fmt.Errorf("stop service: %w", err)
+	}
+	n.ready = false
+	return nil
+}
+
+func (n *netRestrictService) SetBandwidthLimit(limit int64) error {
+	if s, ok := n.service.(*bandwidth.Bandwidth); ok {
+		s.Limit = limit
+		return nil
+	}
+
+	return fmt.Errorf("could not cast netRestrictService.service to *bandwidth.Bandwidth")
+}
+
+func (n *netRestrictService) SetLatencyParams(delay, jitter time.Duration) error {
+	if s, ok := n.service.(*latency.Latency); ok {
+		s.Latency = delay
+		s.Jitter = jitter
+		return nil
+	}
+
+	return fmt.Errorf("could not cast netRestrictService.service to *latency.Latency")
+}
+
+func (n *netRestrictService) SetPacketLossRate(rate int32) error {
+	if s, ok := n.service.(*packetloss.PacketLoss); ok {
+		s.PacketLossRate = rate
+		return nil
+	}
+
+	return fmt.Errorf("could not cast netRestrictService.service to *packetloss.PacketLoss")
+}
+
+func (n *netRestrictService) SetNetworkInterface(networkInterfaceName string) error {
+	iface, err := net.InterfaceByName(networkInterfaceName)
+	if err != nil {
+		return fmt.Errorf("lookup network device %q: %v", networkInterfaceName, err)
+	}
+
+	if s, ok := n.service.(*packetloss.PacketLoss); ok {
+		s.NetworkInterface = iface
+	} else if s, ok := n.service.(*bandwidth.Bandwidth); ok {
+		s.NetworkInterface = iface
+	} else if s, ok := n.service.(*latency.Latency); ok {
+		s.NetworkInterface = iface
+	} else {
+		return fmt.Errorf("could not cast netRestrictService.service to *packetloss.PacketLoss, *bandwidth.Bandwidth or *latency.Latency")
+	}
+	return nil
 }
