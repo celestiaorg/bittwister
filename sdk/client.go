@@ -73,10 +73,13 @@ func (c *Client) postResource(resPath string, requestBody interface{}) ([]byte, 
 
 func (c *Client) getServiceStatus(resPath string) (*api.MetaMessage, error) {
 	resp, err := c.getResource(resPath)
+	if err != nil {
+		return nil, err
+	}
 	msg := &api.MetaMessage{}
 
 	if err := json.Unmarshal(resp, msg); err != nil {
 		return nil, err
 	}
-	return msg, err
+	return msg, nil
 }
