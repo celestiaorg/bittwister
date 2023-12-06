@@ -50,10 +50,13 @@ func (c *Client) LatencyStatus() (*MetaMessage, error) {
 
 func (c *Client) AllServicesStatus() ([]ServiceStatus, error) {
 	resp, err := c.getResource("/services/status")
-	msgs := []api.ServiceStatus{}
+	if err != nil {
+		return nil, err
+	}
 
+	msgs := []api.ServiceStatus{}
 	if err := json.Unmarshal(resp, &msgs); err != nil {
 		return nil, err
 	}
-	return msgs, err
+	return msgs, nil
 }
