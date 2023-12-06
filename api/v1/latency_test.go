@@ -14,12 +14,7 @@ import (
 func (s *APITestSuite) TestLatencyStartStop() {
 	t := s.T()
 
-	reqBody := api.LatencyStartRequest{
-		NetworkInterfaceName: s.ifaceName,
-		Latency:              100,
-		Jitter:               50,
-	}
-	jsonBody, err := json.Marshal(reqBody)
+	jsonBody, err := json.Marshal(s.getDefaultLatencyStartRequest())
 	require.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodPost, "/api/v1/latency/start", bytes.NewReader(jsonBody))
@@ -50,12 +45,7 @@ func (s *APITestSuite) TestLatencyStatus() {
 		t.Fatalf("unexpected service status: %s", slug)
 	}
 
-	reqBody := api.LatencyStartRequest{
-		NetworkInterfaceName: s.ifaceName,
-		Latency:              100,
-		Jitter:               50,
-	}
-	jsonBody, err := json.Marshal(reqBody)
+	jsonBody, err := json.Marshal(s.getDefaultLatencyStartRequest())
 	require.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodPost, "/api/v1/latency/start", bytes.NewReader(jsonBody))
@@ -78,4 +68,12 @@ func (s *APITestSuite) TestLatencyStatus() {
 	slug, err = getServiceStatusSlug(s.restAPI.LatencyStatus)
 	require.NoError(t, err)
 	assert.Equal(t, api.SlugServiceNotReady, slug)
+}
+
+func (s *APITestSuite) getDefaultLatencyStartRequest() api.LatencyStartRequest {
+	return api.LatencyStartRequest{
+		NetworkInterfaceName: s.ifaceName,
+		Latency:              100,
+		Jitter:               50,
+	}
 }

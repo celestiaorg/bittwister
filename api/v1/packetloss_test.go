@@ -14,11 +14,7 @@ import (
 func (s *APITestSuite) TestPacketlossStartStop() {
 	t := s.T()
 
-	reqBody := api.PacketLossStartRequest{
-		NetworkInterfaceName: s.ifaceName,
-		PacketLossRate:       10,
-	}
-	jsonBody, err := json.Marshal(reqBody)
+	jsonBody, err := json.Marshal(s.getDefaultPacketLossStartRequest())
 	require.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodPost, "/api/v1/packetloss/start", bytes.NewReader(jsonBody))
@@ -49,11 +45,7 @@ func (s *APITestSuite) TestPacketlossStatus() {
 		t.Fatalf("unexpected service status: %s", slug)
 	}
 
-	reqBody := api.PacketLossStartRequest{
-		NetworkInterfaceName: s.ifaceName,
-		PacketLossRate:       10,
-	}
-	jsonBody, err := json.Marshal(reqBody)
+	jsonBody, err := json.Marshal(s.getDefaultPacketLossStartRequest())
 	require.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodPost, "/api/v1/packetloss/start", bytes.NewReader(jsonBody))
@@ -76,4 +68,11 @@ func (s *APITestSuite) TestPacketlossStatus() {
 	slug, err = getServiceStatusSlug(s.restAPI.PacketlossStatus)
 	require.NoError(t, err)
 	assert.Equal(t, api.SlugServiceNotReady, slug)
+}
+
+func (s *APITestSuite) getDefaultPacketLossStartRequest() api.PacketLossStartRequest {
+	return api.PacketLossStartRequest{
+		NetworkInterfaceName: s.ifaceName,
+		PacketLossRate:       10,
+	}
 }
