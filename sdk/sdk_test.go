@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/celestiaorg/bittwister/api/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,7 +25,7 @@ func Test_SDK_Client_GetResource_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, response)
 
-	var message api.MetaMessage
+	var message MetaMessage
 	err = json.Unmarshal(response, &message)
 	require.NoError(t, err)
 	assert.Equal(t, "info", message.Type)
@@ -50,7 +49,7 @@ func Test_SDK_Client_GetResource_HTTPError(t *testing.T) {
 func Test_SDK_Client_PostResource_Success(t *testing.T) {
 	testCases := []struct {
 		RequestBody interface{}
-		Expected    api.MetaMessage
+		Expected    MetaMessage
 	}{
 		{
 			RequestBody: struct {
@@ -64,7 +63,7 @@ func Test_SDK_Client_PostResource_Success(t *testing.T) {
 				Title:   "Test",
 				Message: "Success",
 			},
-			Expected: api.MetaMessage{
+			Expected: MetaMessage{
 				Type:    "info",
 				Slug:    "test",
 				Title:   "Test",
@@ -89,7 +88,7 @@ func Test_SDK_Client_PostResource_Success(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, response)
 
-		var message api.MetaMessage
+		var message MetaMessage
 		err = json.Unmarshal(response, &message)
 		require.NoError(t, err)
 		assert.Equal(t, tc.Expected, message)
@@ -120,7 +119,7 @@ func Test_SDK_Client_PostResource_HTTPError(t *testing.T) {
 }
 
 func Test_SDK_Client_GetServiceStatus_Success(t *testing.T) {
-	expectedStatus := api.MetaMessage{
+	expectedStatus := MetaMessage{
 		Type:    "info",
 		Slug:    "service-ready",
 		Title:   "Service Status",
@@ -164,7 +163,7 @@ func Test_SDK_Client_PacketlossStart_Success(t *testing.T) {
 	defer mockServer.Close()
 
 	client := NewClient(mockServer.URL)
-	err := client.PacketlossStart(api.PacketLossStartRequest{})
+	err := client.PacketlossStart(PacketLossStartRequest{})
 
 	assert.NoError(t, err)
 }
@@ -180,7 +179,7 @@ func Test_SDK_Client_PacketlossStop_Success(t *testing.T) {
 }
 
 func Test_SDK_Client_PacketlossStatus_Success(t *testing.T) {
-	expectedStatus := api.MetaMessage{
+	expectedStatus := MetaMessage{
 		Type:    "info",
 		Slug:    "service-ready",
 		Title:   "Packetloss Service",
@@ -204,7 +203,7 @@ func Test_SDK_Client_PacketlossStatus_Success(t *testing.T) {
 }
 
 func Test_SDK_Client_BandwidthStart_Success(t *testing.T) {
-	expectedRequest := api.BandwidthStartRequest{
+	expectedRequest := BandwidthStartRequest{
 		NetworkInterfaceName: "eth0",
 		Limit:                100,
 	}
@@ -232,7 +231,7 @@ func Test_SDK_Client_BandwidthStop_Success(t *testing.T) {
 }
 
 func Test_SDK_Client_BandwidthStatus_Success(t *testing.T) {
-	expectedStatus := api.MetaMessage{
+	expectedStatus := MetaMessage{
 		Type:    "info",
 		Slug:    "service-ready",
 		Title:   "Bandwidth Service",
@@ -256,7 +255,7 @@ func Test_SDK_Client_BandwidthStatus_Success(t *testing.T) {
 }
 
 func Test_SDK_Client_LatencyStart_Success(t *testing.T) {
-	expectedRequest := api.LatencyStartRequest{
+	expectedRequest := LatencyStartRequest{
 		NetworkInterfaceName: "eth0",
 		Latency:              50,
 		Jitter:               10,
@@ -285,7 +284,7 @@ func Test_SDK_Client_LatencyStop_Success(t *testing.T) {
 }
 
 func Test_SDK_Client_LatencyStatus_Success(t *testing.T) {
-	expectedStatus := api.MetaMessage{
+	expectedStatus := MetaMessage{
 		Type:    "info",
 		Slug:    "service-ready",
 		Title:   "Latency Service",
@@ -309,7 +308,7 @@ func Test_SDK_Client_LatencyStatus_Success(t *testing.T) {
 }
 
 func Test_SDK_Client_AllServicesStatus_Success(t *testing.T) {
-	expectedOutput := []api.ServiceStatus{{
+	expectedOutput := []ServiceStatus{{
 		Name:                 "test-service",
 		Ready:                true,
 		NetworkInterfaceName: "eth0",
@@ -336,12 +335,12 @@ func Test_SDK_Client_ServiceStatus_Unmarshal(t *testing.T) {
 	testCases := []struct {
 		Name     string
 		Input    string
-		Expected api.ServiceStatus
+		Expected ServiceStatus
 	}{
 		{
 			Name:  "Valid service status",
 			Input: `{"name": "test-service", "ready": true, "network_interface_name": "eth0", "params": {"key": "value"}}`,
-			Expected: api.ServiceStatus{
+			Expected: ServiceStatus{
 				Name:                 "test-service",
 				Ready:                true,
 				NetworkInterfaceName: "eth0",
@@ -351,13 +350,13 @@ func Test_SDK_Client_ServiceStatus_Unmarshal(t *testing.T) {
 		{
 			Name:     "Empty service status",
 			Input:    `{}`,
-			Expected: api.ServiceStatus{},
+			Expected: ServiceStatus{},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			var result api.ServiceStatus
+			var result ServiceStatus
 			err := json.Unmarshal([]byte(tc.Input), &result)
 
 			assert.NoError(t, err)
