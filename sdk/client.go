@@ -74,9 +74,9 @@ func (c *Client) postResource(resPath string, requestBody interface{}) ([]byte, 
 }
 
 func (c *Client) getServiceStatus(resPath string) (*api.MetaMessage, error) {
-	resp, err := c.getResource(resPath)
-	if err != nil {
-		return nil, err
+	resp, resErr := c.getResource(resPath)
+	if resErr != nil {
+		return nil, resErr
 	}
 	msg := &api.MetaMessage{}
 
@@ -87,14 +87,17 @@ func (c *Client) getServiceStatus(resPath string) (*api.MetaMessage, error) {
 }
 
 func (c *Client) postServiceAction(resPath string, req interface{}) error {
-	resp, err := c.postResource(resPath, req)
-	if err != nil {
-		return fmt.Errorf("failed to send request: %w", err)
+	resp, resErr := c.postResource(resPath, req)
+	// Since the response body can have more information about the error, we try to parse it
+	if resErr != nil && resp == nil {
+		return fmt.Errorf("postResource: %w", resErr)
 	}
 	msg := api.MetaMessage{}
 
 	if err := json.Unmarshal(resp, &msg); err != nil {
-		return nil // if the response is not a MetaMessage, it's probably a success message
+		// if the response is not a MetaMessage, it's probably a success message
+		// Therefore we just return the original error from the request
+		return resErr
 	}
 	return Error{Message: msg}
 }
