@@ -30,7 +30,7 @@ func (c *Client) getResource(resPath string) ([]byte, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+		return nil, fmt.Errorf("unexpected status: %d output: %q", resp.StatusCode, resp.Body)
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -60,7 +60,7 @@ func (c *Client) postResource(resPath string, requestBody interface{}) ([]byte, 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+		return nil, fmt.Errorf("unexpected status: %d output: %q", resp.StatusCode, resp.Body)
 	}
 
 	body, err := io.ReadAll(resp.Body)
