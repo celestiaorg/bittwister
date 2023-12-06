@@ -29,16 +29,17 @@ func (c *Client) getResource(resPath string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status: %d output: %q", resp.StatusCode, resp.Body)
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	return body, nil
+	var statusErr error
+	if resp.StatusCode != http.StatusOK {
+		statusErr = fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	return body, statusErr
 }
 
 func (c *Client) postResource(resPath string, requestBody interface{}) ([]byte, error) {
@@ -59,16 +60,17 @@ func (c *Client) postResource(resPath string, requestBody interface{}) ([]byte, 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("unexpected status: %d output: %q", resp.StatusCode, resp.Body)
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	return body, nil
+	var statusErr error
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		statusErr = fmt.Errorf("unexpected status: %d", resp.StatusCode)
+	}
+
+	return body, statusErr
 }
 
 func (c *Client) getServiceStatus(resPath string) (*api.MetaMessage, error) {
