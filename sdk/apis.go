@@ -13,13 +13,11 @@ type ServiceStatus = api.ServiceStatus
 type MetaMessage = api.MetaMessage
 
 func (c *Client) PacketlossStart(req PacketLossStartRequest) error {
-	_, err := c.postResource("/packetloss/start", req)
-	return err
+	return c.postServiceAction("/packetloss/start", req)
 }
 
 func (c *Client) PacketlossStop() error {
-	_, err := c.postResource("/packetloss/stop", nil)
-	return err
+	return c.postServiceAction("/packetloss/stop", nil)
 }
 
 func (c *Client) PacketlossStatus() (*MetaMessage, error) {
@@ -27,13 +25,11 @@ func (c *Client) PacketlossStatus() (*MetaMessage, error) {
 }
 
 func (c *Client) BandwidthStart(req BandwidthStartRequest) error {
-	_, err := c.postResource("/bandwidth/start", req)
-	return err
+	return c.postServiceAction("/bandwidth/start", req)
 }
 
 func (c *Client) BandwidthStop() error {
-	_, err := c.postResource("/bandwidth/stop", nil)
-	return err
+	return c.postServiceAction("/bandwidth/stop", nil)
 }
 
 func (c *Client) BandwidthStatus() (*MetaMessage, error) {
@@ -41,13 +37,11 @@ func (c *Client) BandwidthStatus() (*MetaMessage, error) {
 }
 
 func (c *Client) LatencyStart(req LatencyStartRequest) error {
-	_, err := c.postResource("/latency/start", req)
-	return err
+	return c.postServiceAction("/latency/start", req)
 }
 
 func (c *Client) LatencyStop() error {
-	_, err := c.postResource("/latency/stop", nil)
-	return err
+	return c.postServiceAction("/latency/stop", nil)
 }
 
 func (c *Client) LatencyStatus() (*MetaMessage, error) {

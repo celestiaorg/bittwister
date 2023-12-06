@@ -83,3 +83,16 @@ func (c *Client) getServiceStatus(resPath string) (*api.MetaMessage, error) {
 	}
 	return msg, nil
 }
+
+func (c *Client) postServiceAction(resPath string, req interface{}) error {
+	resp, err := c.postResource(resPath, req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %w", err)
+	}
+	msg := api.MetaMessage{}
+
+	if err := json.Unmarshal(resp, &msg); err != nil {
+		return nil // if the response is not a MetaMessage, it's probably a success message
+	}
+	return Error{Message: msg}
+}
