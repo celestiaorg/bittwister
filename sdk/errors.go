@@ -55,3 +55,11 @@ func IsErrorServiceStartFailed(err error) bool {
 	}
 	return e.Message.Slug == api.SlugServiceStartFailed
 }
+
+func IsErrorServiceNotReady(err error) bool {
+	e, ok := err.(Error)
+	if !ok {
+		return false
+	}
+	return e.Message.Slug == api.SlugServiceNotReady
+}
