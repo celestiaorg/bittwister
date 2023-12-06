@@ -6,13 +6,18 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/celestiaorg/bittwister/xdp/bandwidth"
+	"github.com/celestiaorg/bittwister/xdp/latency"
+	"github.com/celestiaorg/bittwister/xdp/packetloss"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
 
+const baseUrl = "/api/v1"
+
 func path(endpoint string) string {
-	return fmt.Sprintf("/api/v1%s", endpoint)
+	return baseUrl + endpoint
 }
 
 func NewRESTApiV1(productionMode bool, logger *zap.Logger) *RESTApiV1 {
@@ -21,6 +26,11 @@ func NewRESTApiV1(productionMode bool, logger *zap.Logger) *RESTApiV1 {
 		logger:         logger,
 		loggerNoStack:  logger.WithOptions(zap.AddStacktrace(zap.DPanicLevel)),
 		productionMode: productionMode,
+
+		// initialize the xdp services
+		bw: &netRestrictService{service: &bandwidth.Bandwidth{}},
+		lt: &netRestrictService{service: &latency.Latency{}},
+		pl: &netRestrictService{service: &packetloss.PacketLoss{}},
 	}
 
 	restAPI.router.HandleFunc("/", restAPI.IndexPage).Methods(http.MethodGet, http.MethodPost, http.MethodOptions, http.MethodPut, http.MethodHead)
@@ -59,9 +69,17 @@ func (a *RESTApiV1) Serve(addr, originAllowed string) error {
 	return a.server.ListenAndServe()
 }
 
+// Shutdown stops the API server and all running XDP services.
 func (a *RESTApiV1) Shutdown() error {
 	if a.server == nil {
 		return errors.New("server is not running")
+	}
+	for _, s := range []*netRestrictService{a.pl, a.bw, a.lt} {
+		if s != nil && s.ready {
+			if err := s.Stop(); err != nil {
+				return fmt.Errorf("error while stopping service: %w", err)
+			}
+		}
 	}
 	return a.server.Shutdown(context.Background())
 }

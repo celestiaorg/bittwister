@@ -14,11 +14,7 @@ import (
 func (s *APITestSuite) TestBandwidthStartStop() {
 	t := s.T()
 
-	reqBody := api.BandwidthStartRequest{
-		NetworkInterfaceName: s.ifaceName,
-		Limit:                100,
-	}
-	jsonBody, err := json.Marshal(reqBody)
+	jsonBody, err := json.Marshal(s.getDefaultBandwidthStartRequest())
 	require.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodPost, "/api/v1/bandwidth/start", bytes.NewReader(jsonBody))
@@ -49,11 +45,7 @@ func (s *APITestSuite) TestBandwidthStatus() {
 		t.Fatalf("unexpected service status: %s", slug)
 	}
 
-	reqBody := api.BandwidthStartRequest{
-		NetworkInterfaceName: s.ifaceName,
-		Limit:                100,
-	}
-	jsonBody, err := json.Marshal(reqBody)
+	jsonBody, err := json.Marshal(s.getDefaultBandwidthStartRequest())
 	require.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodPost, "/api/v1/bandwidth/start", bytes.NewReader(jsonBody))
@@ -72,4 +64,11 @@ func (s *APITestSuite) TestBandwidthStatus() {
 	slug, err = getServiceStatusSlug(s.restAPI.BandwidthStatus)
 	require.NoError(t, err)
 	assert.Equal(t, api.SlugServiceNotReady, slug)
+}
+
+func (s *APITestSuite) getDefaultBandwidthStartRequest() api.BandwidthStartRequest {
+	return api.BandwidthStartRequest{
+		NetworkInterfaceName: s.ifaceName,
+		Limit:                100,
+	}
 }

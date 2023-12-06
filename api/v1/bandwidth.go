@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/celestiaorg/bittwister/xdp/bandwidth"
 	"go.uber.org/zap"
 )
 
@@ -23,26 +22,20 @@ func (a *RESTApiV1) BandwidthStart(resp http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	if a.bw == nil {
-		a.bw = &netRestrictService{
-			service: &bandwidth.Bandwidth{
-				Limit: body.Limit,
+	if !ensureServiceInitialized(resp, a.bw) {
+		return
+	}
+
+	if err := a.bw.SetBandwidthLimit(body.Limit); err != nil {
+		sendJSONError(resp,
+			MetaMessage{
+				Type:    APIMetaMessageTypeError,
+				Slug:    SlugServiceSetParamFailed,
+				Title:   "Service set param failed",
+				Message: err.Error(),
 			},
-		}
-	} else {
-		bw, ok := a.bw.service.(*bandwidth.Bandwidth)
-		if !ok {
-			sendJSONError(resp,
-				MetaMessage{
-					Type:    APIMetaMessageTypeError,
-					Slug:    SlugTypeError,
-					Title:   "Type cast error",
-					Message: "could not cast netRestrictService.service to *bandwidth.Bandwidth",
-				},
-				http.StatusInternalServerError)
-			return
-		}
-		bw.Limit = body.Limit
+			http.StatusInternalServerError)
+		return
 	}
 
 	err := netServiceStart(resp, a.bw, body.NetworkInterfaceName)

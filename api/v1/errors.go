@@ -18,6 +18,7 @@ const (
 	SlugServiceNotInitialized = "service-not-initialized"
 	SlugServiceReady          = "service-ready"
 	SlugServiceNotReady       = "service-not-ready"
+	SlugServiceSetParamFailed = "service-set-param-failed"
 	SlugJSONDecodeFailed      = "json-decode-failed"
 	SlugTypeError             = "type-error"
 )

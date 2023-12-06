@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/celestiaorg/bittwister/xdp/latency"
 	"go.uber.org/zap"
 )
 
-// PacketlossStart implements POST /packetloss/start
+// LatencyStart implements POST /latency/start
 func (a *RESTApiV1) LatencyStart(resp http.ResponseWriter, req *http.Request) {
 	var body LatencyStartRequest
 	if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
@@ -24,32 +23,26 @@ func (a *RESTApiV1) LatencyStart(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if a.lt == nil {
-		a.lt = &netRestrictService{
-			service: &latency.Latency{
-				Latency: time.Duration(body.Latency) * time.Millisecond,
-				Jitter:  time.Duration(body.Jitter) * time.Millisecond,
-			},
-		}
-	} else {
-		lt, ok := a.lt.service.(*latency.Latency)
-		if !ok {
-			sendJSONError(resp,
-				MetaMessage{
-					Type:    APIMetaMessageTypeError,
-					Slug:    SlugTypeError,
-					Title:   "Type cast error",
-					Message: "could not cast netRestrictService.service to *latency.Latency",
-				},
-				http.StatusInternalServerError)
-			return
-		}
-
-		lt.Latency = time.Duration(body.Latency) * time.Millisecond
-		lt.Jitter = time.Duration(body.Jitter) * time.Millisecond
+	if !ensureServiceInitialized(resp, a.lt) {
+		return
 	}
 
-	err := netServiceStart(resp, a.lt, body.NetworkInterfaceName)
+	err := a.lt.SetLatencyParams(
+		time.Duration(body.Latency)*time.Millisecond,
+		time.Duration(body.Jitter)*time.Millisecond)
+	if err != nil {
+		sendJSONError(resp,
+			MetaMessage{
+				Type:    APIMetaMessageTypeError,
+				Slug:    SlugServiceSetParamFailed,
+				Title:   "Service set param failed",
+				Message: err.Error(),
+			},
+			http.StatusInternalServerError)
+		return
+	}
+
+	err = netServiceStart(resp, a.lt, body.NetworkInterfaceName)
 	if err != nil {
 		a.loggerNoStack.Error("netServiceStart failed", zap.Error(err))
 	}

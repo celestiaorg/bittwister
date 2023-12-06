@@ -2,64 +2,9 @@ package api
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"time"
-
-	"github.com/celestiaorg/bittwister/xdp"
-	"github.com/celestiaorg/bittwister/xdp/bandwidth"
-	"github.com/celestiaorg/bittwister/xdp/latency"
-	"github.com/celestiaorg/bittwister/xdp/packetloss"
 )
-
-const ServiceStopTimeout = 5 // Seconds
-
-type netRestrictService struct {
-	service xdp.XdpLoader
-	cancel  xdp.CancelFunc
-	ready   bool
-}
-
-func (n *netRestrictService) Start(networkInterfaceName string) error {
-	if n.service == nil {
-		return ErrServiceNotInitialized
-	}
-
-	iface, err := net.InterfaceByName(networkInterfaceName)
-	if err != nil {
-		return fmt.Errorf("lookup network device %q: %v", networkInterfaceName, err)
-	}
-
-	if s, ok := n.service.(*packetloss.PacketLoss); ok {
-		s.NetworkInterface = iface
-	} else if s, ok := n.service.(*bandwidth.Bandwidth); ok {
-		s.NetworkInterface = iface
-	} else if s, ok := n.service.(*latency.Latency); ok {
-		s.NetworkInterface = iface
-	} else {
-		return fmt.Errorf("could not cast netRestrictService.service to *packetloss.PacketLoss, *bandwidth.Bandwidth or *latency.Latency")
-	}
-
-	n.cancel, err = n.service.Start()
-	if err != nil {
-		return fmt.Errorf("start service: %w", err)
-	}
-	n.ready = true
-
-	return nil
-}
-
-func (n *netRestrictService) Stop() error {
-	if n.cancel == nil {
-		return ErrServiceNotStarted
-	}
-
-	if err := n.cancel(); err != nil {
-		return fmt.Errorf("stop service: %w", err)
-	}
-	n.ready = false
-	return nil
-}
 
 func netServiceStart(resp http.ResponseWriter, ns *netRestrictService, ifaceName string) error {
 	if ns == nil || ns.service == nil {
@@ -177,4 +122,20 @@ func netServiceStatus(resp http.ResponseWriter, ns *netRestrictService) error {
 		return fmt.Errorf("sendJSON failed: %w", err)
 	}
 	return nil
+}
+
+func ensureServiceInitialized(resp http.ResponseWriter, ns *netRestrictService) bool {
+	if ns != nil {
+		return true
+	}
+	sendJSONError(resp,
+		MetaMessage{
+			Type:    APIMetaMessageTypeError,
+			Slug:    SlugServiceNotInitialized,
+			Title:   "Service not initiated",
+			Message: "a.(ns *netRestrictService) is nil",
+		},
+		http.StatusInternalServerError)
+
+	return false
 }
