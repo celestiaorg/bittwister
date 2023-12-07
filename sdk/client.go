@@ -74,12 +74,12 @@ func (c *Client) postResource(resPath string, requestBody interface{}) ([]byte, 
 }
 
 func (c *Client) getServiceStatus(resPath string) (*api.MetaMessage, error) {
-	resp, resErr := c.getResource(resPath)
-	if resErr != nil {
-		return nil, resErr
+	resp, err := c.getResource(resPath)
+	if err != nil {
+		return nil, err
 	}
-	msg := &api.MetaMessage{}
 
+	msg := &api.MetaMessage{}
 	if err := json.Unmarshal(resp, msg); err != nil {
 		return nil, err
 	}
