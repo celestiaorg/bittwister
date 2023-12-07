@@ -92,12 +92,13 @@ func (c *Client) postServiceAction(resPath string, req interface{}) error {
 	if resErr != nil && resp == nil {
 		return fmt.Errorf("postResource: %w", resErr)
 	}
-	msg := api.MetaMessage{}
 
-	if err := json.Unmarshal(resp, &msg); err != nil {
-		// if the response is not a MetaMessage, it's probably a success message
-		// Therefore we just return the original error from the request
-		return resErr
+	msg := api.MetaMessage{}
+	if err := json.Unmarshal(resp, &msg); err == nil {
+		return Error{Message: msg}
 	}
-	return Error{Message: msg}
+
+	// if the response is not a MetaMessage, it's probably a success message
+	// Therefore we just return the original error from the request which is nil on success
+	return resErr
 }
