@@ -7,13 +7,7 @@ import (
 )
 
 func netServiceStart(resp http.ResponseWriter, ns *netRestrictService, ifaceName string) error {
-	if ns == nil || ns.service == nil {
-		sendJSONError(resp, MetaMessage{
-			Type:    APIMetaMessageTypeError,
-			Slug:    SlugServiceNotInitialized,
-			Title:   "Service not initiated",
-			Message: "To get the status of the service, it must be started first.",
-		}, http.StatusOK)
+	if !ensureServiceInitialized(resp, ns) {
 		return ErrServiceNotInitialized
 	}
 
@@ -43,13 +37,7 @@ func netServiceStart(resp http.ResponseWriter, ns *netRestrictService, ifaceName
 }
 
 func netServiceStop(resp http.ResponseWriter, ns *netRestrictService) error {
-	if ns == nil || ns.service == nil {
-		sendJSONError(resp, MetaMessage{
-			Type:    APIMetaMessageTypeError,
-			Slug:    SlugServiceNotInitialized,
-			Title:   "Service not initiated",
-			Message: "To get the status of the service, it must be started first.",
-		}, http.StatusOK)
+	if !ensureServiceInitialized(resp, ns) {
 		return ErrServiceNotInitialized
 	}
 
@@ -104,7 +92,7 @@ func netServiceStatus(resp http.ResponseWriter, ns *netRestrictService) error {
 			Slug:    SlugServiceNotInitialized,
 			Title:   "Service not initiated",
 			Message: "To get the status of the service, it must be started first.",
-		}, http.StatusOK)
+		}, http.StatusInternalServerError)
 		return ErrServiceNotInitialized
 	}
 
@@ -125,7 +113,7 @@ func netServiceStatus(resp http.ResponseWriter, ns *netRestrictService) error {
 }
 
 func ensureServiceInitialized(resp http.ResponseWriter, ns *netRestrictService) bool {
-	if ns != nil {
+	if ns != nil && ns.service != nil {
 		return true
 	}
 	sendJSONError(resp,
