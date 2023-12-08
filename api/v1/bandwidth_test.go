@@ -17,7 +17,7 @@ func (s *APITestSuite) TestBandwidthStartStop() {
 	jsonBody, err := json.Marshal(s.getDefaultBandwidthStartRequest())
 	require.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPost, "/api/v1/bandwidth/start", bytes.NewReader(jsonBody))
+	req, err := http.NewRequest(http.MethodPost, api.BandwidthPath.Start(), bytes.NewReader(jsonBody))
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()
@@ -48,7 +48,7 @@ func (s *APITestSuite) TestBandwidthStatus() {
 	jsonBody, err := json.Marshal(s.getDefaultBandwidthStartRequest())
 	require.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPost, "/api/v1/bandwidth/start", bytes.NewReader(jsonBody))
+	req, err := http.NewRequest(http.MethodPost, api.BandwidthPath.Start(), bytes.NewReader(jsonBody))
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()

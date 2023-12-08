@@ -17,7 +17,7 @@ func (s *APITestSuite) TestLatencyStartStop() {
 	jsonBody, err := json.Marshal(s.getDefaultLatencyStartRequest())
 	require.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPost, "/api/v1/latency/start", bytes.NewReader(jsonBody))
+	req, err := http.NewRequest(http.MethodPost, api.LatencyPath.Start(), bytes.NewReader(jsonBody))
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()
@@ -48,7 +48,7 @@ func (s *APITestSuite) TestLatencyStatus() {
 	jsonBody, err := json.Marshal(s.getDefaultLatencyStartRequest())
 	require.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPost, "/api/v1/latency/start", bytes.NewReader(jsonBody))
+	req, err := http.NewRequest(http.MethodPost, api.LatencyPath.Start(), bytes.NewReader(jsonBody))
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()

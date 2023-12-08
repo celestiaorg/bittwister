@@ -6,8 +6,6 @@ import (
 	"github.com/celestiaorg/bittwister/api/v1"
 )
 
-const endpointPrefix = api.EndpointPrefix
-
 type PacketLossStartRequest = api.PacketLossStartRequest
 type BandwidthStartRequest = api.BandwidthStartRequest
 type LatencyStartRequest = api.LatencyStartRequest
@@ -15,43 +13,43 @@ type ServiceStatus = api.ServiceStatus
 type MetaMessage = api.MetaMessage
 
 func (c *Client) PacketlossStart(req PacketLossStartRequest) error {
-	return c.postServiceAction(endpointPrefix+"/packetloss/start", req)
+	return c.postServiceAction(api.PacketlossPath.Start(), req)
 }
 
 func (c *Client) PacketlossStop() error {
-	return c.postServiceAction(endpointPrefix+"/packetloss/stop", nil)
+	return c.postServiceAction(api.PacketlossPath.Stop(), nil)
 }
 
 func (c *Client) PacketlossStatus() (*MetaMessage, error) {
-	return c.getServiceStatus(endpointPrefix + "/packetloss/status")
+	return c.getServiceStatus(api.PacketlossPath.Status())
 }
 
 func (c *Client) BandwidthStart(req BandwidthStartRequest) error {
-	return c.postServiceAction(endpointPrefix+"/bandwidth/start", req)
+	return c.postServiceAction(api.BandwidthPath.Start(), req)
 }
 
 func (c *Client) BandwidthStop() error {
-	return c.postServiceAction(endpointPrefix+"/bandwidth/stop", nil)
+	return c.postServiceAction(api.BandwidthPath.Stop(), nil)
 }
 
 func (c *Client) BandwidthStatus() (*MetaMessage, error) {
-	return c.getServiceStatus(endpointPrefix + "/bandwidth/status")
+	return c.getServiceStatus(api.BandwidthPath.Status())
 }
 
 func (c *Client) LatencyStart(req LatencyStartRequest) error {
-	return c.postServiceAction(endpointPrefix+"/latency/start", req)
+	return c.postServiceAction(api.LatencyPath.Start(), req)
 }
 
 func (c *Client) LatencyStop() error {
-	return c.postServiceAction(endpointPrefix+"/latency/stop", nil)
+	return c.postServiceAction(api.LatencyPath.Stop(), nil)
 }
 
 func (c *Client) LatencyStatus() (*MetaMessage, error) {
-	return c.getServiceStatus(endpointPrefix + "/latency/status")
+	return c.getServiceStatus(api.LatencyPath.Status())
 }
 
 func (c *Client) AllServicesStatus() ([]ServiceStatus, error) {
-	resp, err := c.getResource(endpointPrefix + "/services/status")
+	resp, err := c.getResource(api.ServicesPath.Status())
 	if err != nil {
 		return nil, err
 	}

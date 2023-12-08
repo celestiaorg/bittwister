@@ -14,12 +14,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const EndpointPrefix = "/api/v1"
-
-func path(endpoint string) string {
-	return EndpointPrefix + endpoint
-}
-
 func NewRESTApiV1(productionMode bool, logger *zap.Logger) *RESTApiV1 {
 	restAPI := &RESTApiV1{
 		router:         mux.NewRouter(),
@@ -35,19 +29,19 @@ func NewRESTApiV1(productionMode bool, logger *zap.Logger) *RESTApiV1 {
 
 	restAPI.router.HandleFunc("/", restAPI.IndexPage).Methods(http.MethodGet, http.MethodPost, http.MethodOptions, http.MethodPut, http.MethodHead)
 
-	restAPI.router.HandleFunc(path("/packetloss/start"), restAPI.PacketlossStart).Methods(http.MethodPost)
-	restAPI.router.HandleFunc(path("/packetloss/status"), restAPI.PacketlossStatus).Methods(http.MethodGet)
-	restAPI.router.HandleFunc(path("/packetloss/stop"), restAPI.PacketlossStop).Methods(http.MethodPost)
+	restAPI.router.HandleFunc(PacketlossPath.Start(), restAPI.PacketlossStart).Methods(http.MethodPost)
+	restAPI.router.HandleFunc(PacketlossPath.Status(), restAPI.PacketlossStatus).Methods(http.MethodGet)
+	restAPI.router.HandleFunc(PacketlossPath.Stop(), restAPI.PacketlossStop).Methods(http.MethodPost)
 
-	restAPI.router.HandleFunc(path("/bandwidth/start"), restAPI.BandwidthStart).Methods(http.MethodPost)
-	restAPI.router.HandleFunc(path("/bandwidth/status"), restAPI.BandwidthStatus).Methods(http.MethodGet)
-	restAPI.router.HandleFunc(path("/bandwidth/stop"), restAPI.BandwidthStop).Methods(http.MethodPost)
+	restAPI.router.HandleFunc(BandwidthPath.Start(), restAPI.BandwidthStart).Methods(http.MethodPost)
+	restAPI.router.HandleFunc(BandwidthPath.Status(), restAPI.BandwidthStatus).Methods(http.MethodGet)
+	restAPI.router.HandleFunc(BandwidthPath.Stop(), restAPI.BandwidthStop).Methods(http.MethodPost)
 
-	restAPI.router.HandleFunc(path("/latency/start"), restAPI.LatencyStart).Methods(http.MethodPost)
-	restAPI.router.HandleFunc(path("/latency/status"), restAPI.LatencyStatus).Methods(http.MethodGet)
-	restAPI.router.HandleFunc(path("/latency/stop"), restAPI.LatencyStop).Methods(http.MethodPost)
+	restAPI.router.HandleFunc(LatencyPath.Start(), restAPI.LatencyStart).Methods(http.MethodPost)
+	restAPI.router.HandleFunc(LatencyPath.Status(), restAPI.LatencyStatus).Methods(http.MethodGet)
+	restAPI.router.HandleFunc(LatencyPath.Stop(), restAPI.LatencyStop).Methods(http.MethodPost)
 
-	restAPI.router.HandleFunc(path("/services/status"), restAPI.NetServicesStatus).Methods(http.MethodGet)
+	restAPI.router.HandleFunc(ServicesPath.Status(), restAPI.NetServicesStatus).Methods(http.MethodGet)
 
 	return restAPI
 }

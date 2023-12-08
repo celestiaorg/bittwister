@@ -17,7 +17,7 @@ func (s *APITestSuite) TestPacketlossStartStop() {
 	jsonBody, err := json.Marshal(s.getDefaultPacketLossStartRequest())
 	require.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPost, "/api/v1/packetloss/start", bytes.NewReader(jsonBody))
+	req, err := http.NewRequest(http.MethodPost, api.PacketlossPath.Start(), bytes.NewReader(jsonBody))
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()
@@ -48,7 +48,7 @@ func (s *APITestSuite) TestPacketlossStatus() {
 	jsonBody, err := json.Marshal(s.getDefaultPacketLossStartRequest())
 	require.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPost, "/api/v1/packetloss/start", bytes.NewReader(jsonBody))
+	req, err := http.NewRequest(http.MethodPost, api.PacketlossPath.Start(), bytes.NewReader(jsonBody))
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()
