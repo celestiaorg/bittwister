@@ -42,7 +42,7 @@ func Test_SDK_Client_GetResource_HTTPError(t *testing.T) {
 
 	client := NewClient(mockServer.URL)
 	res, err := client.getResource("/error")
-	assert.Nil(t, res)
+	assert.Empty(t, res)
 	assert.Error(t, err)
 }
 
@@ -113,7 +113,7 @@ func Test_SDK_Client_PostResource_HTTPError(t *testing.T) {
 		client := NewClient(mockServer.URL)
 		res, err := client.postResource("/error", nil)
 
-		assert.Nil(t, res)
+		assert.Empty(t, res)
 		assert.Error(t, err)
 	}
 }
