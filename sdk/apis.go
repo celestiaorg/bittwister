@@ -13,53 +13,50 @@ type ServiceStatus = api.ServiceStatus
 type MetaMessage = api.MetaMessage
 
 func (c *Client) PacketlossStart(req PacketLossStartRequest) error {
-	_, err := c.postResource("/packetloss/start", req)
-	return err
+	return c.postServiceAction(api.PacketlossPath.Start(), req)
 }
 
 func (c *Client) PacketlossStop() error {
-	_, err := c.postResource("/packetloss/stop", nil)
-	return err
+	return c.postServiceAction(api.PacketlossPath.Stop(), nil)
 }
 
 func (c *Client) PacketlossStatus() (*MetaMessage, error) {
-	return c.getServiceStatus("/packetloss/status")
+	return c.getServiceStatus(api.PacketlossPath.Status())
 }
 
 func (c *Client) BandwidthStart(req BandwidthStartRequest) error {
-	_, err := c.postResource("/bandwidth/start", req)
-	return err
+	return c.postServiceAction(api.BandwidthPath.Start(), req)
 }
 
 func (c *Client) BandwidthStop() error {
-	_, err := c.postResource("/bandwidth/stop", nil)
-	return err
+	return c.postServiceAction(api.BandwidthPath.Stop(), nil)
 }
 
 func (c *Client) BandwidthStatus() (*MetaMessage, error) {
-	return c.getServiceStatus("/bandwidth/status")
+	return c.getServiceStatus(api.BandwidthPath.Status())
 }
 
 func (c *Client) LatencyStart(req LatencyStartRequest) error {
-	_, err := c.postResource("/latency/start", req)
-	return err
+	return c.postServiceAction(api.LatencyPath.Start(), req)
 }
 
 func (c *Client) LatencyStop() error {
-	_, err := c.postResource("/latency/stop", nil)
-	return err
+	return c.postServiceAction(api.LatencyPath.Stop(), nil)
 }
 
 func (c *Client) LatencyStatus() (*MetaMessage, error) {
-	return c.getServiceStatus("/latency/status")
+	return c.getServiceStatus(api.LatencyPath.Status())
 }
 
 func (c *Client) AllServicesStatus() ([]ServiceStatus, error) {
-	resp, err := c.getResource("/services/status")
-	msgs := []api.ServiceStatus{}
+	resp, err := c.getResource(api.ServicesPath.Status())
+	if err != nil {
+		return nil, err
+	}
 
+	msgs := []api.ServiceStatus{}
 	if err := json.Unmarshal(resp, &msgs); err != nil {
 		return nil, err
 	}
-	return msgs, err
+	return msgs, nil
 }
