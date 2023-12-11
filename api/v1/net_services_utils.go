@@ -22,10 +22,15 @@ func netServiceStart(resp http.ResponseWriter, ns *netRestrictService, ifaceName
 	}
 
 	if err := ns.Start(ifaceName); err != nil {
+		slug := SlugServiceStartFailed
+		if err == ErrServiceNotInitialized {
+			slug = SlugServiceNotInitialized
+		}
+
 		sendJSONError(resp,
 			MetaMessage{
 				Type:    APIMetaMessageTypeError,
-				Slug:    SlugServiceStartFailed,
+				Slug:    slug,
 				Title:   "Service start failed",
 				Message: err.Error(),
 			},
@@ -42,10 +47,15 @@ func netServiceStop(resp http.ResponseWriter, ns *netRestrictService) error {
 	}
 
 	if err := ns.Stop(); err != nil {
+		slug := SlugServiceStopFailed
+		if err == ErrServiceNotStarted {
+			slug = SlugServiceNotStarted
+		}
+
 		sendJSONError(resp,
 			MetaMessage{
 				Type:    APIMetaMessageTypeError,
-				Slug:    SlugServiceStopFailed,
+				Slug:    slug,
 				Title:   "Service stop failed",
 				Message: err.Error(),
 			},
