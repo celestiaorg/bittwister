@@ -33,18 +33,24 @@ func (a *RESTApiV1) NetServicesStatus(resp http.ResponseWriter, req *http.Reques
 		if s, ok := ns.service.(*packetloss.PacketLoss); ok {
 			name = "packetloss"
 			params["packet_loss_rate"] = s.PacketLossRate
-			netIfaceName = s.NetworkInterface.Name
+			if s.NetworkInterface != nil {
+				netIfaceName = s.NetworkInterface.Name
+			}
 
 		} else if s, ok := ns.service.(*bandwidth.Bandwidth); ok {
 			name = "bandwidth"
 			params["limit"] = s.Limit
-			netIfaceName = s.NetworkInterface.Name
+			if s.NetworkInterface != nil {
+				netIfaceName = s.NetworkInterface.Name
+			}
 
 		} else if s, ok := ns.service.(*latency.Latency); ok {
 			name = "latency"
 			params["latency_ms"] = s.Latency.Milliseconds()
 			params["jitter_ms"] = s.Jitter.Milliseconds()
-			netIfaceName = s.NetworkInterface.Name
+			if s.NetworkInterface != nil {
+				netIfaceName = s.NetworkInterface.Name
+			}
 
 		} else {
 			sendJSONError(resp,
