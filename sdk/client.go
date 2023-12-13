@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/celestiaorg/bittwister/api/v1"
 )
@@ -13,6 +14,7 @@ import (
 type Client struct {
 	baseURL    string
 	httpClient *http.Client
+	proxy      *url.URL
 }
 
 func NewClient(baseURL string) *Client {
@@ -20,6 +22,16 @@ func NewClient(baseURL string) *Client {
 		baseURL:    baseURL,
 		httpClient: http.DefaultClient,
 	}
+}
+
+func (c *Client) SetProxy(proxyURL string) error {
+	proxy, err := url.Parse(proxyURL)
+	if err != nil {
+		return err
+	}
+	c.proxy = proxy
+	c.httpClient.Transport = &http.Transport{Proxy: http.ProxyURL(c.proxy)}
+	return nil
 }
 
 func (c *Client) getResource(resPath string) ([]byte, error) {
