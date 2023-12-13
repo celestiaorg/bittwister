@@ -193,23 +193,23 @@ make test-bandwidth
 
 ```yaml
 Results:
-Number of parallel connections per test: 100
-Duration per test: 60 seconds
-Bandwidth: 0 bps          Expected: 64 Kbps
-Bandwidth: 95 Kbps        Expected: 128 Kbps
-Bandwidth: 150 Kbps       Expected: 256 Kbps
-Bandwidth: 191 Kbps       Expected: 512 Kbps
-Bandwidth: 737 Kbps       Expected: 1024 Kbps
-Bandwidth: 1 Mbps         Expected: 2 Mbps
-Bandwidth: 3 Mbps         Expected: 4 Mbps
-Bandwidth: 6 Mbps         Expected: 8 Mbps
-Bandwidth: 13 Mbps        Expected: 16 Mbps
-Bandwidth: 27 Mbps        Expected: 32 Mbps
-Bandwidth: 50 Mbps        Expected: 64 Mbps
-Bandwidth: 115 Mbps       Expected: 128 Mbps
-Bandwidth: 221 Mbps       Expected: 256 Mbps
-Bandwidth: 407 Mbps       Expected: 512 Mbps
-Bandwidth: 934 Mbps       Expected: 1024 Mbps
+Number of parallel connections per test: 128
+Test duration per test: 600 seconds
+expected bandwidth: 64 Kbps      actual bandwidth: 47 Kbps
+expected bandwidth: 128 Kbps     actual bandwidth: 92 Kbps
+expected bandwidth: 256 Kbps     actual bandwidth: 186 Kbps
+expected bandwidth: 512 Kbps     actual bandwidth: 361 Kbps
+expected bandwidth: 1024 Kbps    actual bandwidth: 0 bps
+expected bandwidth: 2 Mbps       actual bandwidth: 1 Mbps
+expected bandwidth: 4 Mbps       actual bandwidth: 2 Mbps
+expected bandwidth: 8 Mbps       actual bandwidth: 6 Mbps
+expected bandwidth: 16 Mbps      actual bandwidth: 13 Mbps
+expected bandwidth: 32 Mbps      actual bandwidth: 24 Mbps
+expected bandwidth: 64 Mbps      actual bandwidth: 49 Mbps
+expected bandwidth: 128 Mbps     actual bandwidth: 100 Mbps
+expected bandwidth: 256 Mbps     actual bandwidth: 187 Mbps
+expected bandwidth: 512 Mbps     actual bandwidth: 459 Mbps
+expected bandwidth: 1024 Mbps    actual bandwidth: 948 Mbps
 ```
 
 ### Test Latency
