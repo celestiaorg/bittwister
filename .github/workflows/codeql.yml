@@ -60,6 +60,10 @@ jobs:
         # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
 
+    # Install dependencies needed for building
+    - name: Install LLVM
+      run: sudo apt-get install llvm
+
     # Custom build step
     - name: Build with Make
       run: make all
